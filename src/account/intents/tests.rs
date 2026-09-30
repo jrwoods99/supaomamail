@@ -96,11 +96,21 @@ fn importance_is_a_capability_and_keeps_the_row() {
     };
     let marked = begin_with(view(), "markImportant");
     assert_eq!(marked["change"], json!({"add":["IMPORTANT"],"remove":[]}));
-    assert_eq!(list(&marked["view"]["messages"]).len(), 3, "the row stays in the inbox");
-    assert_eq!(marked["view"]["messages"][0]["labelIds"], json!(["INBOX", "UNREAD", "IMPORTANT"]));
+    assert_eq!(
+        list(&marked["view"]["messages"]).len(),
+        3,
+        "the row stays in the inbox"
+    );
+    assert_eq!(
+        marked["view"]["messages"][0]["labelIds"],
+        json!(["INBOX", "UNREAD", "IMPORTANT"])
+    );
     let unmarked = begin_with(marked["view"].clone(), "markNotImportant");
     assert_eq!(unmarked["change"], json!({"add":[],"remove":["IMPORTANT"]}));
-    assert_eq!(unmarked["view"]["messages"][0]["labelIds"], json!(["INBOX", "UNREAD"]));
+    assert_eq!(
+        unmarked["view"]["messages"][0]["labelIds"],
+        json!(["INBOX", "UNREAD"])
+    );
     settle(&store, &unmarked["token"], json!([]));
     let failed = settle(&store, &marked["token"], json!(["a"]));
     assert_eq!(
