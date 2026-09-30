@@ -1,6 +1,10 @@
 {
   "gmail": {
     "inbox": "in:inbox",
+    "inbox:primary": "in:inbox -category:promotions -category:social -category:forums",
+    "inbox:primaryUnread": "in:inbox is:unread -category:promotions -category:social -category:forums",
+    "inbox:other": "in:inbox {category:promotions category:social category:forums}",
+    "inbox:otherUnread": "in:inbox is:unread {category:promotions category:social category:forums}",
     "unread": "in:inbox is:unread -category:promotions -category:social -category:forums",
     "starred": "is:starred",
     "sent": "in:sent",

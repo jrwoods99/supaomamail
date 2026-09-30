@@ -13,11 +13,18 @@ var AUTH = "oauth"
 
 var MARK = "gmail.png"
 
+// The Inbox can be drawn as two tabs, the way Gmail's own Primary tab keeps
+// Promotions, Social and Forums out of the way. What each tab lists is a native
+// query (`inbox:primary`, `inbox:other`); this only names them.
 var MAILBOXES = [
   {
     "key": "inbox",
     "label": "Inbox",
-    "icon": "inbox"
+    "icon": "inbox",
+    "splits": [
+      { "key": "primary", "label": "Primary" },
+      { "key": "other", "label": "Other" }
+    ]
   },
   {
     "key": "unread",

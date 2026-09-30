@@ -230,6 +230,37 @@ mod tests {
             );
         }
     }
+    // Primary is the scope Unread and the bar already count, so "Primary" names
+    // one thing wherever it appears; Other is what that scope leaves out.
+    // Updates stays in Primary for the reason it stays in Unread: receipts and
+    // notifications are mail somebody is waiting on.
+    #[test]
+    fn gmail_inbox_splits_share_the_primary_scope_of_unread() {
+        let unread = mailbox_query("gmail", "unread").unwrap();
+        assert_eq!(mailbox_query("gmail", "inbox:primaryUnread"), Some(unread));
+        assert_eq!(
+            mailbox_query("gmail", "inbox:primary").unwrap(),
+            unread.replacen(" is:unread", "", 1)
+        );
+        let other = mailbox_query("gmail", "inbox:other").unwrap();
+        assert_eq!(
+            other,
+            "in:inbox {category:promotions category:social category:forums}"
+        );
+        for category in ["promotions", "social", "forums"] {
+            assert!(unread.contains(&format!("-category:{category}")));
+            assert!(other.contains(&format!("category:{category}")));
+        }
+        assert!(!other.contains("updates") && !unread.contains("updates"));
+        assert_eq!(
+            mailbox_query("gmail", "inbox:otherUnread").unwrap(),
+            other.replacen("in:inbox", "in:inbox is:unread", 1)
+        );
+        // Nothing but Gmail declares a split.
+        for id in ["outlook", "hey", "jmap", "imap"] {
+            assert_eq!(mailbox_query(id, "inbox:primary"), None);
+        }
+    }
     #[test]
     fn generated_ui_descriptor_matches_native_authority() {
         let source = include_str!("../../ui/providers/NativeDomain.js");

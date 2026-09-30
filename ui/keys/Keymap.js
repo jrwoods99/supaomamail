@@ -183,6 +183,14 @@ var BINDINGS = [
       "Ctrl+6", "Ctrl+7", "Ctrl+8", "Ctrl+9"],
     contexts: MAIL, group: "Going", label: "Go to that mailbox",
     display: "Ctrl+1…9" },
+  // Across the Inbox's own tabs, Primary and Other, where the mailbox draws
+  // them. Only where the keyboard is parked: in a field or on a form, Tab is
+  // still Qt's own walk from one control to the next. Where there are no tabs
+  // the key does nothing, the way `n` does with no conversation to walk.
+  { id: "nextSplit", keys: ["Tab"], contexts: MAIL,
+    group: "Going", label: "Next Inbox tab" },
+  { id: "previousSplit", keys: ["Shift+Tab"], contexts: MAIL,
+    group: "Going", label: "Previous Inbox tab" },
 
   // Accounts are surfaces rather than destinations inside the current one, so
   // they use Alt and the same visible order as the account switcher.

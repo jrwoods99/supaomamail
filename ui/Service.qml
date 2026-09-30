@@ -1043,6 +1043,13 @@ Item {
     saveAccounts()
   }
 
+  function setAccountInboxSplits(id, on) {
+    var next = Accounts.setInboxSplits(accountList, id, on)
+    if (Accounts.serialize(next) === Accounts.serialize(accountList)) return
+    accountList = next
+    saveAccounts()
+  }
+
   function setAccountSignatureHtml(id, html) {
     var next = Accounts.setSignatureHtml(accountList, id, html)
     if (Accounts.serialize(next) === Accounts.serialize(accountList)) return
@@ -1384,6 +1391,8 @@ Item {
         // The name as it was typed, empty when none was, so a field editing
         // it shows what is there rather than the address standing in for it.
         label: String(accounts[i].label || ""),
+        provider: accounts[i].provider,
+        inboxSplits: accounts[i].inboxSplits === true,
         signature: String(accounts[i].signature || ""),
         signatureHtml: String(accounts[i].signatureHtml || "")
       })
@@ -1729,6 +1738,9 @@ Item {
   // which belong to one account. What a merged list may *do* comes from
   // `Unified.everyMailboxCan` rather than from here.
   readonly property string providerId: current ? current.providerId : Provider.DEFAULT_ID
+  // The visible mailbox's Inbox tabs. A merged list is several Inboxes, and
+  // one mailbox's Primary is not a place the others have.
+  readonly property var inboxTabs: unified || !current ? null : current.inboxTabs
   readonly property var mailboxes: unified
     ? (unifiedSnapshot.mailboxes || [])
     : (current ? current.mailboxes : Provider.mailboxes(Provider.DEFAULT_ID))
@@ -2631,6 +2643,7 @@ Item {
       bodyMode: root.bodyMode
       // The labels this mailbox watches for new mail, off its own entry.
       monitoredIds: entry ? entry.monitored : []
+      inboxSplits: !!entry && entry.inboxSplits === true
       // Every mailbox obeys the one answer: it is about what the reader is
       // willing to tell a sender, not about which account the mail came to.
       alwaysShowImages: root.alwaysShowImages

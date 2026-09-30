@@ -24,6 +24,18 @@ Flickable {
   signal selected(string key)
   signal chipHovered(int index, bool isHovered)
 
+  // A segment's words. Only the Unread mailbox carries the mailbox count:
+  // repeating it on Inbox says the same number twice, and the bar already says
+  // it once. A tab strip hands each segment its own `count`, or a `dot` for a
+  // tab holding unread mail that no number would be honest about.
+  function labelFor(entry) {
+    var label = String(entry.label || "")
+    if (entry.key === "unread" && root.unread > 0) return label + " " + root.unread
+    if (Number(entry.count) > 0) return label + " " + Number(entry.count)
+    if (entry.dot === true) return label + " •"
+    return label
+  }
+
   // Keep every destination reachable, including folders excluded from search.
   // Narrow windows scroll the row instead of hiding Archive, Junk and Trash.
   readonly property var mailboxes: Array.isArray(root.allMailboxes) ? root.allMailboxes : []
@@ -108,11 +120,7 @@ Flickable {
           Button {
             id: chip
             anchors.fill: parent
-            // Only the unread mailbox carries a count: repeating it on Inbox
-            // says the same number twice, and the bar already says it once.
-            text: segment.modelData.key === "unread" && root.unread > 0
-              ? segment.modelData.label + " " + root.unread
-              : segment.modelData.label
+            text: root.labelFor(segment.modelData)
             foreground: root.textColor
             bordered: false
             selected: root.current === segment.modelData.key

@@ -351,6 +351,25 @@ assert.ok(provider.unreadQuery("gmail").indexOf("category:primary") === -1,
 assert.ok(provider.unreadQuery("gmail").indexOf("-category:updates") === -1,
   "Updates carries receipts, deliveries and GitHub's notifications; it stays in")
 
+// The Inbox's tabs. Primary is the Unread scope without the unread, so
+// "Primary" names one thing wherever it is drawn; Other is what that scope
+// leaves out. Only a provider whose native facts define a tab's query has it.
+{
+  const tabs = provider.splitsFor("gmail", "inbox")
+  deepEqual(tabs.map(tab => tab.key), ["primary", "other"])
+  deepEqual(tabs.map(tab => tab.label), ["Primary", "Other"])
+  assert.strictEqual(tabs[0].unreadQuery, provider.unreadQuery("gmail"),
+    "Primary's unread mail is exactly what the Unread mailbox and the bar count")
+  assert.strictEqual(tabs[0].query, provider.unreadQuery("gmail").replace(" is:unread", ""))
+  assert.strictEqual(tabs[1].query, "in:inbox {category:promotions category:social category:forums}")
+  assert.strictEqual(tabs[1].unreadQuery,
+    "in:inbox is:unread {category:promotions category:social category:forums}")
+  for (const id of ["imap", "outlook", "hey", "jmap", "nonesuch", undefined])
+    deepEqual(provider.splitsFor(id, "inbox"), [], String(id))
+  deepEqual(provider.splitsFor("gmail", "starred"), [], "only the Inbox is split")
+  deepEqual(provider.splitsFor("gmail", "nonesuch"), [], "an unknown mailbox is not the Inbox")
+}
+
 // Selecting a label in the sidebar is a different act from typing in the search
 // box, even though both end in a query. Routing it through `query` would wrap an
 // IMAP folder in a TEXT search — which looks for the folder's own name inside

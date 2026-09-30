@@ -51,7 +51,31 @@ function mailbox(raw) {
     result.minimumApiVersion = Number(entry.minimumApiVersion)
   if (Number(entry.maximumApiVersion || 0) > 0)
     result.maximumApiVersion = Number(entry.maximumApiVersion)
+  // Only on a mailbox that has them, like the API bounds above, so every other
+  // mailbox keeps exactly the shape it always had.
+  var splits = Array.isArray(entry.splits) ? entry.splits : []
+  if (splits.length > 0) {
+    result.splits = []
+    for (var i = 0; i < splits.length; i++)
+      result.splits.push({ key: String(splits[i].key || ""), label: String(splits[i].label || "") })
+  }
   return result
+}
+
+// A split's queries are native facts keyed "<mailbox>:<split>" and
+// "<mailbox>:<split>Unread". A split the facts do not know is dropped rather
+// than drawn as a tab that lists nothing.
+function splitsOf(box, queries) {
+  var out = []
+  var declared = Array.isArray(box.splits) ? box.splits : []
+  for (var i = 0; i < declared.length; i++) {
+    var split = declared[i]
+    var query = String(queries[box.key + ":" + split.key] || "")
+    if (split.key === "" || query === "") continue
+    out.push({ key: split.key, label: split.label, query: query,
+      unreadQuery: String(queries[box.key + ":" + split.key + "Unread"] || "") })
+  }
+  return out
 }
 
 function define(source) {
@@ -62,6 +86,7 @@ function define(source) {
   for (var i = 0; i < list.length; i++) {
     var box = mailbox(list[i])
     box.query = String((facts.queries || {})[box.key] || "")
+    if (box.splits) box.splits = splitsOf(box, facts.queries || {})
     boxes.push(box)
   }
   return {
@@ -174,6 +199,14 @@ function hasMailbox(id, key) {
 
 function unreadQuery(id) {
   return mailboxFor(id, "unread").query
+}
+
+// The tabs a mailbox is split into, [{ key, label, query, unreadQuery }], or
+// none. Asked by provider and key rather than read off `get` and `mailboxFor`,
+// which fall back to Gmail and to the Inbox for an id or a key they do not
+// know: a mailbox nobody can name has no tabs.
+function splitsFor(id, key) {
+  return exists(id) && hasMailbox(id, key) ? mailboxFor(id, key).splits || [] : []
 }
 
 function badge(id) {

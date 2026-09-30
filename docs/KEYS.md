@@ -162,6 +162,8 @@ used to exist, and they had.
 | `undoSend` | `Alt+Z` | all | Undo send |
 | `search` | `/` | mail | Search |
 | `goMailbox` | `Ctrl+1`, `Ctrl+2`, `Ctrl+3`, `Ctrl+4`, `Ctrl+5`, `Ctrl+6`, `Ctrl+7`, `Ctrl+8`, `Ctrl+9` | mail | Go to that mailbox |
+| `nextSplit` | `Tab` | mail | Next Inbox tab |
+| `previousSplit` | `Shift+Tab` | mail | Previous Inbox tab |
 | `goAccount` | `Alt+1`, `Alt+2`, `Alt+3`, `Alt+4`, `Alt+5`, `Alt+6`, `Alt+7`, `Alt+8`, `Alt+9`, `Alt+0` | mail+calendar | Go to that email account |
 | `switchAccount` | `Alt+A` | mail | Switch account |
 | `askAgent` | `Alt+G` | mail+compose | Ask AI about the message or draft |

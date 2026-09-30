@@ -315,6 +315,34 @@ Item {
       compare(composeField.text, "-=")
     }
 
+    // The Inbox's tabs. A window Shortcut takes Tab before Qt's focus chain
+    // sees it, which is what keeps the keyboard where it was parked: unbound,
+    // Tab in the list walked the focus into the first field that took it.
+    function test_tab_walks_the_inbox_tabs_and_leaves_the_keyboard_parked() {
+      keyClick(Qt.Key_Tab)
+      compare(host.lastId, "nextSplit")
+      compare(host.focusItem, keyboardHome, "Tab did not move the focus")
+      host.lastId = ""
+      // Shift+Tab arrives as Backtab with Shift held; the table names it
+      // Shift+Tab, and this is where that is proved to be the same key.
+      keyClick(Qt.Key_Backtab, Qt.ShiftModifier)
+      compare(host.lastId, "previousSplit")
+      host.context = "reader"
+      host.lastId = ""
+      wait(20)
+      keyClick(Qt.Key_Tab)
+      compare(host.lastId, "nextSplit", "and from the reader")
+    }
+
+    function test_tab_is_qts_own_in_a_draft() {
+      host.context = "compose"
+      compose.opened = true
+      scope.applyContextFocus()
+      wait(20)
+      keyClick(Qt.Key_Tab)
+      compare(host.lastId, "", "a field keeps Tab")
+    }
+
     function test_a_reader_only_key_is_dead_in_the_list() {
       keyClick(Qt.Key_0, Qt.ControlModifier)
       compare(host.lastId, "", "nothing to zoom from the list")

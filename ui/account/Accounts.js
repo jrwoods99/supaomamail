@@ -220,6 +220,10 @@ function makeAccount(account) {
     // The labels watched for new mail, by id. A fact about the mailbox, so
     // it lives beside its name rather than in the window's file.
     monitored: idList(raw.monitored),
+    // Whether the Inbox is drawn as its tabs (Primary and Other) on a
+    // provider whose Inbox has them. Off until asked for: how one mailbox is
+    // read is its owner's choice, like its name.
+    inboxSplits: raw.inboxSplits === true,
     // Whether this row is the setup form's working state rather than a
     // mailbox. It used to be inferred from the id being empty, and that read
     // a mailbox whose address had been corrupted as a draft and dropped it at
@@ -537,6 +541,16 @@ function toggleMonitored(list, id, labelId) {
   var index = entry.monitored.indexOf(key)
   if (index >= 0) entry.monitored.splice(index, 1)
   else entry.monitored.push(key)
+  next.accounts[at] = entry
+  return next
+}
+
+function setInboxSplits(list, id, on) {
+  var next = copyList(list)
+  var at = indexOfId(next.accounts, id)
+  if (at < 0) return next
+  var entry = makeAccount(next.accounts[at])
+  entry.inboxSplits = on === true
   next.accounts[at] = entry
   return next
 }

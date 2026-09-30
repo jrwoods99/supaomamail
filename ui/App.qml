@@ -911,6 +911,8 @@ Item {
     if (id === "undoSend") { undoPendingSend(); return }
     if (id === "search") return searchBar.focusField()
     if (id === "goMailbox") return goSlot(Keymap.slotFor(id, sequence))
+    if (id === "nextSplit" || id === "previousSplit")
+      return !!service && !!service.inboxTabs && service.inboxTabs.step(id === "nextSplit" ? 1 : -1)
     if (id === "goAccount") {
       var accountIndex = Keymap.slotFor(id, sequence)
       if (service && accountIndex >= 0 && accountIndex < service.accountCount)
@@ -1769,14 +1771,36 @@ Item {
           visible: width > 0 && !root.showPage && !root.composing
             && !root.calendarVisible
 
-          // The scroller fills the column so its bar sits on the column edge;
-          // the breathing room is padding on the content, not a margin on the
-          // viewport, which would push the bar inward with it.
+          // The Inbox's own tabs, where this mailbox draws it as Primary and
+          // Other: above the scroller rather than in it, so they stay put
+          // while the list moves under them.
+          MailboxTabs {
+            id: splitTabs
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.margins: Style.space(8)
+            visible: !!root.service && !!root.service.inboxTabs && root.service.inboxTabs.shown
+            textColor: root.foreground
+            accentColor: root.accent
+            panelFontFamily: root.fontFamily
+            allMailboxes: visible ? root.service.inboxTabs.tabs : []
+            current: visible ? root.service.inboxTabs.current : ""
+            onSelected: function(key) { root.service.inboxTabs.select(key) }
+          }
+
+          // The scroller fills the rest of the column so its bar sits on the
+          // column edge; the breathing room is padding on the content, not a
+          // margin on the viewport, which would push the bar inward with it.
           Flickable {
             id: listFlick
 
             WheelScroller { view: listFlick }
-            anchors.fill: parent
+            anchors.top: splitTabs.visible ? splitTabs.bottom : parent.top
+            anchors.topMargin: splitTabs.visible ? Style.space(4) : 0
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
             contentWidth: width
             contentHeight: list.implicitHeight + Style.space(12)
             clip: true

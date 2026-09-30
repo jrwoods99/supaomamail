@@ -498,6 +498,7 @@ Item {
   readonly property string effectiveQuery: rawQuery !== "" ? rawQuery
     : searchRaw !== "" ? searchRaw
     : resolvedProviderInput === providerQueryInput ? resolvedProviderQuery
+    : splits.query !== "" ? splits.query
     : Provider.mailboxFor(providerId, mailboxKey).query
   readonly property bool hasMore: nextPageToken !== ""
   // A cached search can already have rows on screen while this stays true.
@@ -575,10 +576,14 @@ Item {
     if (!ready) return
     refreshCounts()
     labelActions.refreshMonitored()
+    splits.refreshUnread()
     if (active && (windowOpen || !listLoaded)) loadMessages(false)
   }
 
   property var monitoredIds: []
+  // This mailbox's own answer to drawing the Inbox as its tabs.
+  property bool inboxSplits: false
+  readonly property var inboxTabs: splits
 
   function refreshCounts() {
     if (!ready || countLoading) return
@@ -1821,7 +1826,8 @@ Item {
       memberOnly: memberOnly === true, mailboxKey: mailboxKey,
       rawQuery: rawQuery, hasLabels: hasLabels,
       sourceLabelId: hasLabels ? rawLabelId : "", capabilities: actionCapabilities,
-      opaqueQuery: effectiveQuery !== Provider.mailboxFor(providerId, mailboxKey).query}
+      opaqueQuery: effectiveQuery !== Provider.mailboxFor(providerId, mailboxKey).query
+        && effectiveQuery !== splits.query}
     var preparationEpoch = intents.epoch
     actionPreparations++
     if (pendingAction === "") pendingActionQuery = actionQuery
@@ -2440,6 +2446,11 @@ Item {
 
   LabelActions {
     id: labelActions
+    account: root
+  }
+
+  InboxSplits {
+    id: splits
     account: root
   }
 

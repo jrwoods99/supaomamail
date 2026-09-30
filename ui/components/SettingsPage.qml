@@ -5,6 +5,7 @@ import qs.Ui
 import "../message/Direction.js" as Direction
 import "../settings/Appearance.js" as Appearance
 import "../message/Html.js" as Html
+import "../providers/Registry.js" as Provider
 
 // Where mailboxes are managed.
 //
@@ -75,6 +76,10 @@ Column {
   }
 
   property string selectedNameAccountId: ""
+  // The mailbox picked above, and whether its Inbox has tabs to draw.
+  readonly property var selectedNameAccount: signatureAccount(selectedNameAccountId)
+  readonly property bool selectedNameAccountSplits: !!selectedNameAccount
+    && Provider.splitsFor(selectedNameAccount.provider, "inbox").length > 1
 
   function nameOptions() {
     var out = []
@@ -1194,6 +1199,58 @@ Column {
       font.family: root.panelFontFamily
       font.pixelSize: Style.font.caption
       wrapMode: Text.WordWrap
+    }
+
+    // The same mailbox's Inbox as Primary and Other, where its provider has
+    // tabs to draw. An independent switch, so it takes effect at once.
+    Rectangle {
+      width: parent.width
+      visible: root.selectedNameAccountSplits
+      implicitHeight: Math.max(splitsText.implicitHeight, splitsSwitch.implicitHeight)
+        + Style.space(16)
+      radius: Style.cornerRadius
+      color: Style.normalFillFor(root.textColor, root.accentColor)
+
+      Column {
+        id: splitsText
+        anchors.left: parent.left
+        anchors.leftMargin: Style.space(12)
+        anchors.right: splitsSwitch.left
+        anchors.rightMargin: Style.space(10)
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: Style.space(2)
+
+        Text {
+          width: parent.width
+          text: "Split the Inbox into Primary and Other"
+          color: root.textColor
+          font.family: root.panelFontFamily
+          font.pixelSize: Style.font.bodySmall
+        }
+
+        Text {
+          width: parent.width
+          text: "Promotions, Social and Forums go to Other. Tab switches between the two."
+          color: root.dimColor
+          font.family: root.panelFontFamily
+          font.pixelSize: Style.font.caption
+          wrapMode: Text.WordWrap
+        }
+      }
+
+      ToggleSwitch {
+        id: splitsSwitch
+        objectName: "settings-inbox-splits"
+        anchors.right: parent.right
+        anchors.rightMargin: Style.space(10)
+        anchors.verticalCenter: parent.verticalCenter
+        checked: !!root.selectedNameAccount && root.selectedNameAccount.inboxSplits === true
+        foreground: root.textColor
+        accent: root.accentColor
+        onToggled: if (root.service && root.selectedNameAccount)
+          root.service.setAccountInboxSplits(root.selectedNameAccountId,
+            root.selectedNameAccount.inboxSplits !== true)
+      }
     }
   }
 

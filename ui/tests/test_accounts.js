@@ -853,6 +853,23 @@ assert.strictEqual(frozen(accounts.replaceAt(cidActive, -1, account("x@example.c
     "and it is written to disk and read back")
 }
 
+// The Inbox tabs are a choice about one mailbox, off until it is made, and
+// they ride with the entry through its other edits and a write to disk.
+{
+  assert.strictEqual(named.accounts[0].inboxSplits, false, "off until asked for")
+  const split = accounts.setInboxSplits(named, "me@gmail.com", true)
+  assert.strictEqual(split.accounts[0].inboxSplits, true)
+  assert.strictEqual(accounts.setLabel(split, "me@gmail.com", "Work").accounts[0].inboxSplits, true,
+    "naming the mailbox keeps its tabs")
+  assert.strictEqual(accounts.load(accounts.serialize(split)).accounts[0].inboxSplits, true,
+    "written to disk and read back")
+  assert.strictEqual(accounts.setInboxSplits(split, "me@gmail.com", false).accounts[0].inboxSplits, false)
+  assert.strictEqual(accounts.setInboxSplits(split, "me@gmail.com", "yes").accounts[0].inboxSplits, false,
+    "only a real true turns them on")
+  assert.strictEqual(accounts.setInboxSplits(named, "nobody@example.org", true).accounts[0].inboxSplits, false)
+  assert.strictEqual(accounts.makeAccount({ email: "a@b.org", inboxSplits: "true" }).inboxSplits, false)
+}
+
 
 // An HTML signature sits beside the plain one and survives its edits.
 {
