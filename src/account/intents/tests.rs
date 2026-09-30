@@ -83,6 +83,33 @@ fn query_account_generation_and_capability_boundaries() {
     assert!(store.call(&json!({"operation":"settle","accountId":"one","query":"inbox|25","generation":1,"token":first["token"],"failedIds":[]})).is_err());
 }
 #[test]
+fn importance_is_a_capability_and_keeps_the_row() {
+    let store = IntentStore::default();
+    // Refused before any edit where the mailbox has no importance marker.
+    for capabilities in [json!({}), json!({"important": false})] {
+        let refused = store.call(&json!({"operation":"begin","accountId":"one","query":"inbox|25","generation":1,"view":view(),"action":"markImportant","ids":["a"],"capabilities":capabilities})).unwrap();
+        assert_eq!(refused, json!({"refused":true,"capability":"important"}));
+    }
+    assert!(store.state.lock().unwrap().contexts.is_empty());
+    let begin_with = |view: Value, action: &str| {
+        store.call(&json!({"operation":"begin","accountId":"one","query":"inbox|25","generation":1,"view":view,"action":action,"ids":["a"],"mailboxKey":"inbox","hasLabels":true,"capabilities":{"important":true}})).unwrap()
+    };
+    let marked = begin_with(view(), "markImportant");
+    assert_eq!(marked["change"], json!({"add":["IMPORTANT"],"remove":[]}));
+    assert_eq!(list(&marked["view"]["messages"]).len(), 3, "the row stays in the inbox");
+    assert_eq!(marked["view"]["messages"][0]["labelIds"], json!(["INBOX", "UNREAD", "IMPORTANT"]));
+    let unmarked = begin_with(marked["view"].clone(), "markNotImportant");
+    assert_eq!(unmarked["change"], json!({"add":[],"remove":["IMPORTANT"]}));
+    assert_eq!(unmarked["view"]["messages"][0]["labelIds"], json!(["INBOX", "UNREAD"]));
+    settle(&store, &unmarked["token"], json!([]));
+    let failed = settle(&store, &marked["token"], json!(["a"]));
+    assert_eq!(
+        failed["view"]["messages"][0]["labelIds"],
+        json!(["INBOX", "UNREAD"]),
+        "a failed mark comes off again; the later unmark already agreed"
+    );
+}
+#[test]
 fn member_only_and_conversation_targets_replay_thread_flags() {
     let store = IntentStore::default();
     let mut initial = view();

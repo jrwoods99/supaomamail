@@ -20,6 +20,7 @@ function capabilities(values) {
     archive: raw.archive === true,
     spam: raw.spam === true,
     star: raw.star === true,
+    important: raw.important === true,
     batch: raw.batch === true,
     web: raw.web === true,
     webBox: raw.webBox === true,

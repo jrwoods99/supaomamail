@@ -134,6 +134,8 @@ used to exist, and they had.
 | `moveToLabel` | `v` | mail | Move to |
 | `markRead` | `Shift+I` | mail | Mark read |
 | `markUnread` | `Shift+U` | mail | Mark unread |
+| `markImportant` | `+`, `=` | mail | Mark important |
+| `markNotImportant` | `-` | mail | Mark not important |
 | `toggleCheck` | `x`, `Space` | mail | Select or deselect the message |
 | `checkAll` | `Ctrl+A` | list | Select every message loaded, or none |
 | `reply` | `r` | mail | Reply |

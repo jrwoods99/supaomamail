@@ -133,6 +133,10 @@ Item {
   readonly property bool canArchive: Provider.can(providerId, "archive", capabilityRefusals)
   readonly property bool canReportSpam: Provider.can(providerId, "spam", capabilityRefusals)
   readonly property bool canStar: Provider.can(providerId, "star", capabilityRefusals)
+  // Gmail's importance marker. Its verbs are API 6 in model.intent, which an
+  // older backend would refuse as unknown after the row had changed.
+  readonly property bool canMarkImportant: Provider.can(providerId, "important", capabilityRefusals)
+    && !!backend && backend.ready && backend.apiVersion >= 6
   readonly property bool canMove: Provider.can(providerId, "move", capabilityRefusals)
   readonly property bool hasLabels: Provider.can(providerId, "labels")
   readonly property bool canOpenOnWeb: Provider.can(providerId, "web")
@@ -151,7 +155,8 @@ Item {
   // `Model.actionCapability` speaks, so the hint row and the guard in `act`
   // read one answer rather than each asking the registry its own way.
   readonly property var actionCapabilities: ({
-    archive: canArchive, star: canStar, spam: canReportSpam, move: canMove })
+    archive: canArchive, star: canStar, spam: canReportSpam, move: canMove,
+    important: canMarkImportant })
   // The key-bound actions this mailbox cannot honour, for the hint row. The
   // buttons are hidden by the three properties above; the keys are bound
   // whatever provider is open, so the row that says what the keyboard does here
@@ -1757,6 +1762,9 @@ Item {
     var needs = Model.actionCapability(action)
     if (needs === "" || actionCapabilities[needs] === true) return false
     var refused = Provider.refusal(providerId, needs, capabilityRefusals)
+    // The service has it and this backend is too old to be asked: saying the
+    // service has none would name the wrong reason.
+    if (refused === "" && Provider.can(providerId, needs, capabilityRefusals)) refused = "This needs an updated backend"
     note(refused !== "" ? refused : Model.actionUnavailable(action, Provider.badge(providerId)))
     return true
   }
@@ -1944,6 +1952,8 @@ Item {
     if (action === "untrash") return "Restored"
     if (action === "star") return "Starred"
     if (action === "unstar") return "Unstarred"
+    if (action === "markImportant") return "Marked important"
+    if (action === "markNotImportant") return "Marked not important"
     if (action === "markRead") return "Marked read"
     if (action === "markUnread") return "Marked unread"
     if (action === "unarchive") return "Moved to Inbox"

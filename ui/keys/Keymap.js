@@ -92,6 +92,15 @@ var BINDINGS = [
     group: "Acting", label: "Mark read" },
   { id: "markUnread", keys: ["Shift+U"], contexts: MAIL,
     group: "Acting", label: "Mark unread" },
+  // Gmail's own pair, one for one as issue #58 asks: `+` -- or `=`, the same
+  // key unshifted -- marks a message important and `-` marks it not
+  // important, which is what Gmail learns its importance from. No status
+  // hint: only a provider with an importance marker offers either, and
+  // `MailAccount.act` refuses them everywhere else before anything moves.
+  { id: "markImportant", keys: ["+", "="], contexts: MAIL,
+    group: "Acting", label: "Mark important" },
+  { id: "markNotImportant", keys: ["-"], contexts: MAIL,
+    group: "Acting", label: "Mark not important" },
   // Space or Gmail's x toggles the cursor row, including while the reader
   // is open beside the list.
   { id: "toggleCheck", keys: ["x", "Space"], contexts: MAIL,

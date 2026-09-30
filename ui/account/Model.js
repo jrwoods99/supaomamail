@@ -382,6 +382,10 @@ function labelChangesFor(action, sourceLabelId) {
   if (action === "markUnread") return { add: ["UNREAD"], remove: [] }
   if (action === "star") return { add: ["STARRED"], remove: [] }
   if (action === "unstar") return { add: [], remove: ["STARRED"] }
+  // Importance is a state, like the star: the message stays in every list it
+  // was in, and only Gmail's own marker moves.
+  if (action === "markImportant") return { add: ["IMPORTANT"], remove: [] }
+  if (action === "markNotImportant") return { add: [], remove: ["IMPORTANT"] }
   if (action === "archive") return { add: [], remove: ["INBOX"] }
   // Moving back to the inbox takes the message out of the label whose list it
   // was found in, the same way a move does and for the same reason: a label
@@ -508,6 +512,7 @@ function actionCapability(action) {
   var verb = String(action || "")
   if (verb === "archive" || verb === "unarchive") return "archive"
   if (verb === "star" || verb === "unstar") return "star"
+  if (verb === "markImportant" || verb === "markNotImportant") return "important"
   if (verb === "spam") return "spam"
   if (labelTarget(verb) !== "") return "move"
   return ""
@@ -521,6 +526,7 @@ function actionUnavailable(action, provider) {
   var needs = actionCapability(action)
   if (needs === "archive") return name + " has no archive"
   if (needs === "star") return name + " has no star"
+  if (needs === "important") return name + " has no importance marker"
   if (needs === "spam") return name + " has no junk verb to report to"
   if (needs === "move") return name + " has no destination you can name"
   return ""
@@ -1832,6 +1838,20 @@ function starActionFor(summaries) {
     if (!rows[i] || !rows[i].starred) return "star"
   }
   return "unstar"
+}
+
+// Gmail's importance, read off the labels rather than a summary field. An
+// optimistic edit recomputes `labelIds` and leaves `important` where it was,
+// so a marker drawn from the field would disagree with the menu for as long
+// as the request took.
+function isImportant(summary) {
+  var labels = summary && Array.isArray(summary.labelIds) ? summary.labelIds : []
+  return labels.indexOf("IMPORTANT") >= 0
+}
+
+// The row menu offers the other state, the way it offers star or unstar.
+function importanceActionFor(summary) {
+  return isImportant(summary) ? "markNotImportant" : "markImportant"
 }
 
 // "3 messages archived": the count, then the single-message note with its

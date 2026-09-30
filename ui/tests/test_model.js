@@ -816,6 +816,29 @@ assert.strictEqual(model.actionUnavailable("spam", "IMAP"),
   "IMAP has no junk verb to report to")
 assert.strictEqual(model.actionUnavailable("trash", "HEY"), "")
 
+// Gmail's importance marker is its own capability: only Gmail has one, and
+// `+` and `-` are bound whatever mailbox is open, so both are refused before
+// the optimistic edit everywhere else.
+assert.strictEqual(model.actionCapability("markImportant"), "important")
+assert.strictEqual(model.actionCapability("markNotImportant"), "important")
+assert.strictEqual(model.actionUnavailable("markImportant", "IMAP"), "IMAP has no importance marker")
+deepEqual(model.labelChangesFor("markImportant"), { add: ["IMPORTANT"], remove: [] })
+deepEqual(model.labelChangesFor("markNotImportant"), { add: [], remove: ["IMPORTANT"] })
+// A state, like the star: the row stays in every list it was in.
+for (const key of ["inbox", "unread", "starred", "all"]) {
+  assert.strictEqual(model.survivesAction(key, "markImportant", ""), true, key)
+  assert.strictEqual(model.survivesAction(key, "markNotImportant", ""), true, key)
+}
+// Read off the labels, which an optimistic edit recomputes, and not off the
+// summary's `important`, which it does not.
+const flagged = model.applyLabelChange({ id: "i1", labelIds: ["INBOX"], important: false }, "markImportant")
+assert.strictEqual(model.isImportant(flagged), true)
+assert.strictEqual(model.importanceActionFor(flagged), "markNotImportant")
+assert.strictEqual(model.isImportant({ id: "i2", labelIds: ["INBOX"], important: true }), false,
+  "the labels are the answer, not a field an edit leaves behind")
+assert.strictEqual(model.importanceActionFor({ id: "i3" }), "markImportant")
+assert.strictEqual(model.isImportant(null), false)
+
 deepEqual(model.unavailableActions({ archive: true, star: true, spam: true, move: true }), [])
 deepEqual(model.unavailableActions({ archive: false, star: false, move: false }),
   ["archive", "star", "move"])

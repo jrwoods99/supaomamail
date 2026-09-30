@@ -278,6 +278,43 @@ Item {
       compare(host.lastId, "", "switching is a mailbox action, not a draft one")
     }
 
+    // Gmail's own pair for importance. `+` is a shifted symbol, like `?`, and
+    // is sent the way the help test sends `?`; `=` is the same key unshifted.
+    function test_plus_equals_and_minus_mark_importance() {
+      keyClick(Qt.Key_Plus)
+      compare(host.lastId, "markImportant")
+      host.lastId = ""
+      keyClick(Qt.Key_Equal)
+      compare(host.lastId, "markImportant", "= is + without the Shift")
+      host.lastId = ""
+      keyClick(Qt.Key_Minus)
+      compare(host.lastId, "markNotImportant")
+      host.context = "reader"
+      host.lastId = ""
+      wait(20)
+      keyClick(Qt.Key_Minus)
+      compare(host.lastId, "markNotImportant", "and from the reader")
+    }
+
+    function test_zoom_keeps_its_ctrl_minus() {
+      host.context = "reader"
+      wait(20)
+      keyClick(Qt.Key_Minus, Qt.ControlModifier)
+      compare(host.lastId, "zoomOut", "Ctrl+- zooms; only a bare - is importance")
+    }
+
+    function test_importance_keys_stay_text_in_a_draft() {
+      host.context = "compose"
+      compose.opened = true
+      composeField.text = ""
+      scope.applyContextFocus()
+      wait(20)
+      keyClick(Qt.Key_Minus)
+      keyClick(Qt.Key_Equal)
+      compare(host.lastId, "")
+      compare(composeField.text, "-=")
+    }
+
     function test_a_reader_only_key_is_dead_in_the_list() {
       keyClick(Qt.Key_0, Qt.ControlModifier)
       compare(host.lastId, "", "nothing to zoom from the list")

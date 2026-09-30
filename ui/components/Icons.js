@@ -24,6 +24,7 @@ var GLYPHS = {
   spam: 0xF0CE6,         // alert-octagon-outline
   unread: 0xF01F0,       // email-outline
   star: 0xF04D2,         // star-outline
+  important: 0xF0ACE,    // label-variant-outline — Gmail's importance marker
   browser: 0xF03CC,      // open-in-new
   refresh: 0xF0450,      // refresh
   send: 0xF048A,         // send — the plane, solid: the outline one hatches at 16px
@@ -60,7 +61,8 @@ var GLYPHS = {
 // The filled form, for the names that have a state to show. A filled star
 // says "on" at a glance where a stroked one does not.
 var FILLED = {
-  star: 0xF04CE          // star
+  star: 0xF04CE,         // star
+  important: 0xF0ACD     // label-variant
 }
 
 var RANGE_FIRST = 0xF0001

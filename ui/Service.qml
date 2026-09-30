@@ -1507,6 +1507,7 @@ Item {
         archive: !!(host && host.canArchive),
         spam: !!(host && host.canReportSpam),
         star: !!(host && host.canStar),
+        important: !!(host && host.canMarkImportant),
         labels: !!(host && host.hasLabels),
         web: !!(host && host.canOpenOnWeb),
         move: !!(host && host.canMove),
@@ -1743,6 +1744,11 @@ Item {
   readonly property bool hasLabels: unified
     ? !!(unifiedSnapshot.capabilities && unifiedSnapshot.capabilities.labels)
     : (!current || current.hasLabels)
+  // Off unless proven: the marker is drawn on rows, and a mailbox that cannot
+  // change it must not show one.
+  readonly property bool canMarkImportant: unified
+    ? !!(unifiedSnapshot.capabilities && unifiedSnapshot.capabilities.important)
+    : (!!current && current.canMarkImportant)
   // Intersected like every other capability: a merged list holds rows from
   // mailboxes whose provider has no web UI at all, and "Open in browser" on
   // one of those is a button that cannot be honoured.

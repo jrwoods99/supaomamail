@@ -30,7 +30,7 @@ Item {
   property int cursorIndex: -1
   readonly property var menuRows: [continueRow, replyRow, replyAllRow, forwardRow, archiveRow,
     unarchiveRow, moveRow,
-    trashRow, spamRow, readRow, starRow, browserRow, aiRow]
+    trashRow, spamRow, readRow, starRow, importantRow, browserRow, aiRow]
   // Whether this message is archived — out of the inbox and not somewhere
   // that has its own verb. Read off the summary the menu was opened on rather
   // than asked of the service, because the menu is about one message. IMAP
@@ -240,6 +240,14 @@ Item {
         visible: !root.service || root.service.canStar
         text: root.summary && root.summary.starred ? "Unstar" : "Star"
         onActivated: root.run(root.summary && root.summary.starred ? "unstar" : "star")
+      }
+      // Gmail's importance marker, in the state it is not in now. Hidden, not
+      // disabled, where the mailbox has no such marker.
+      MenuRow {
+        id: importantRow
+        visible: !!root.service && root.service.canMarkImportant === true
+        text: Model.isImportant(root.summary) ? "Mark not important" : "Mark important"
+        onActivated: root.run(Model.importanceActionFor(root.summary))
       }
 
       MenuSeparatorLine {

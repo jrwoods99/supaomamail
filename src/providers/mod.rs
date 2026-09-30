@@ -23,6 +23,9 @@ const CAPABILITIES: &[&str] = &[
     "archive",
     "spam",
     "star",
+    // Gmail's importance marker: the IMPORTANT label a message can carry or
+    // not. No other provider has one, and none is invented for them.
+    "important",
     "batch",
     "web",
     "webBox",
@@ -63,6 +66,7 @@ const PROVIDERS: &[Provider] = &[
             "archive",
             "spam",
             "star",
+            "important",
             "batch",
             "web",
             "webBox",
@@ -220,5 +224,14 @@ mod tests {
         }
         assert_eq!(providers[0]["capabilities"]["conversations"], false);
         assert_eq!(providers[2]["capabilities"]["conversations"], true);
+        // The importance marker is Gmail's alone.
+        for provider in providers {
+            assert_eq!(
+                provider["capabilities"]["important"],
+                provider["id"] == "gmail",
+                "{}",
+                provider["id"]
+            );
+        }
     }
 }

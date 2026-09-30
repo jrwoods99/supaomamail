@@ -86,6 +86,7 @@ Column {
       selectionActive: root.checkedIds.length > 0
       ctrlHeld: root.ctrlHeld
       canArchive: root.service.canArchive
+      showsImportance: root.service.canMarkImportant === true
       conversations: Unified.rowIsConversation(modelData)
       contentDirection: root.service.contentDirection
       onActivated: root.messageActivated(modelData.id)

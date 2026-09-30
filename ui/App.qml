@@ -882,6 +882,8 @@ Item {
     if (id === "moveToLabel") return openLabelPicker()
     if (id === "markRead") return actOnCursor("markRead")
     if (id === "markUnread") return actOnCursor("markUnread")
+    if (id === "markImportant") return actOnCursor("markImportant")
+    if (id === "markNotImportant") return actOnCursor("markNotImportant")
     if (id === "reply") return composeFromCursor("reply")
     if (id === "replyAll") return composeFromCursor("replyAll")
     if (id === "forward") return composeFromCursor("forward")

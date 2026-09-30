@@ -123,6 +123,7 @@ pub fn capability(action: &str) -> &'static str {
     match action {
         "archive" | "unarchive" => "archive",
         "star" | "unstar" => "star",
+        "markImportant" | "markNotImportant" => "important",
         "spam" => "spam",
         a if !target(a).is_empty() => "move",
         _ => "",
@@ -149,6 +150,9 @@ pub fn changes(action: &str, source: &str) -> Value {
         "markUnread" => (vec!["UNREAD"], vec![]),
         "star" => (vec!["STARRED"], vec![]),
         "unstar" => (vec![], vec!["STARRED"]),
+        // A state, like the star: the row stays wherever it was listed.
+        "markImportant" => (vec!["IMPORTANT"], vec![]),
+        "markNotImportant" => (vec![], vec!["IMPORTANT"]),
         "archive" => (vec![], vec!["INBOX"]),
         "unarchive" => (
             vec!["INBOX"],

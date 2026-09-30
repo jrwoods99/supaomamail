@@ -24,6 +24,9 @@ Rectangle {
     ? String(root.summary.sourceLabel) : ""
 
   property bool canArchive: true
+  // Whether the mailbox keeps Gmail's importance marker. Told, like the
+  // archive: a row that cannot change the marker must not draw one.
+  property bool showsImportance: false
   // Whether this row stands for a conversation rather than for one message.
   // Grouping is a panel rule gated on the provider's `conversations`
   // capability; a row is told, and asks nobody.
@@ -160,13 +163,16 @@ Rectangle {
     Item {
       width: parent.width
       implicitHeight: Math.max(sender.implicitHeight, time.implicitHeight)
+      // What the text before the time stops at: the importance marker where it
+      // is drawn, the time itself where it is not.
+      readonly property Item beforeTime: importance.visible ? importance : time
 
       Text {
         id: sender
         objectName: "message-sender"
         anchors.left: parent.left
         anchors.right: source.visible ? source.left
-          : (count.visible ? count.left : time.left)
+          : (count.visible ? count.left : parent.beforeTime.left)
         anchors.rightMargin: (source.visible || count.visible) ? Style.space(4) : Style.space(8)
         textFormat: Text.PlainText
         text: root.summary.from.display
@@ -186,7 +192,7 @@ Rectangle {
       Text {
         id: source
         objectName: "message-source"
-        anchors.right: count.visible ? count.left : time.left
+        anchors.right: count.visible ? count.left : parent.beforeTime.left
         anchors.rightMargin: count.visible ? Style.space(4) : Style.space(8)
         anchors.baseline: sender.baseline
         visible: root.sourceLabel !== ""
@@ -213,7 +219,7 @@ Rectangle {
       Text {
         id: count
         objectName: "message-conversation-count"
-        anchors.right: time.left
+        anchors.right: parent.beforeTime.left
         anchors.rightMargin: Style.space(8)
         anchors.baseline: sender.baseline
         visible: root.conversations && root.threadCount > 0
@@ -223,6 +229,30 @@ Rectangle {
         font.family: root.panelFontFamily
         font.pixelSize: Style.font.caption
         font.bold: root.summary.unread
+      }
+
+      // Gmail's importance marker, where the mailbox has one. Beside the time
+      // rather than in front of the sender, so marking a message moves nothing
+      // anybody is reading. A glyph with its own name on hover, never a colour
+      // alone, and read off the labels an edit recomputes.
+      ActionIcon {
+        id: importance
+        objectName: "message-important"
+        anchors.right: time.left
+        anchors.rightMargin: Style.space(6)
+        anchors.verticalCenter: time.verticalCenter
+        visible: root.showsImportance && Model.isImportant(root.summary)
+        name: "important"
+        filled: true
+        iconSize: Style.font.caption
+        color: root.accentColor
+
+        HoverHandler { id: importanceHover }
+        PanelToolTip {
+          visible: importanceHover.hovered
+          text: "Important"
+          fontFamily: root.panelFontFamily
+        }
       }
 
       Text {

@@ -75,6 +75,8 @@ fn native_conversation_actions_golden() {
         "markUnread",
         "star",
         "unstar",
+        "markImportant",
+        "markNotImportant",
         "archive",
         "unarchive",
         "spam",
