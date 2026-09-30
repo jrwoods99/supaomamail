@@ -743,7 +743,7 @@ if 'account.backend.call("model.intent"' not in intents or "Model." in intents:
 if "account.runNativeAction(" not in Path("account/BatchAction.qml").read_text():
     raise SystemExit("test_source.sh: bulk edits must share the native transaction pipeline")
 PY_NATIVE_INTENTS
-grep -q 'if (!service.act(acted, action)) return false' App.qml \
+grep -q 'if (!service.act(acted, action)) return false' account/ActionRouter.qml \
   || fail "a refused action must not move the keyboard cursor"
 awk '
   /if \(!finalPage\)/ { in_null_page = 1 }

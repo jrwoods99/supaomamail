@@ -15,6 +15,7 @@ import "providers/Registry.js" as Provider
 import "agent/Agent.js" as Agent
 import "message/Mailto.js" as Mailto
 import "message/Message.js" as Message
+import "account"
 import "components"
 import "compose"
 import "calendar"
@@ -241,36 +242,21 @@ Item {
     return true
   }
 
-  // Acting on the selection acts on every ticked row at once, then drops the
-  // selection: the rows it named have moved or changed, and a selection that
-  // outlived the action would be one keystroke from repeating it.
-  function actOnChecked(action) {
-    if (!service || checkedIds.length === 0) return false
-    // Never through another mailbox: a switch that reached the service by
-    // any road drops the ticks before a batch can be built from them.
-    if (checkedAccountId !== String(service.activeAccountId || "")) {
-      checkedIds = []
-      return false
-    }
-    var ids = checkedIds.slice()
-    var leaves = !Model.survivesAction(service.mailboxKey, action,
-      service.rawQuery, service.hasLabels, service.rawLabelId)
-    var next = leaves ? Model.cursorAfterRemovals(service.messages, ids, cursorId) : cursorId
-    // The open message going with the selection closes the reader, the way
-    // acting on it alone does: it is about to leave this list.
-    var wasOpen = currentView === "reader" && ids.indexOf(service.selectedId) >= 0
-    if (!service.actMany(ids, action)) return false
-    checkedIds = []
-    if (!leaves) return true
-    if (wasOpen) {
-      if (next !== "") openMessage(next)
-      else backToList()
-      return true
-    }
-    cursorId = next
-    revealCursorRow()
-    return true
+  // What acting on the cursor, the ticks or a rail stop means, and where the
+  // keyboard goes after it, is decided in account/ActionRouter.qml.
+  ActionRouter {
+    id: actionRouter
+    app: root
+    picker: labelPicker
   }
+  function actOnChecked(action) { return actionRouter.actOnChecked(action) }
+  function actOnCursor(action, onlyCursor) { return actionRouter.actOnCursor(action, onlyCursor) }
+  function actOnMember(action, id) { return actionRouter.actOnMember(action, id) }
+  function actFromRow(id, action) { return actionRouter.actFromRow(id, action) }
+  function openLabelPicker(onlyCursor) { return actionRouter.openLabelPicker(onlyCursor) }
+  function openAgentAt(id, sceneX, sceneY) { return actionRouter.openAgentAt(id, sceneX, sceneY) }
+  function openAgentCentered(id) { return actionRouter.openAgentCentered(id) }
+  function openAgentFromRow(id, sceneX, sceneY) { return actionRouter.openAgentAt(id, sceneX, sceneY) }
 
   // Kept across messages, and across the window being closed: how somebody
   // reads their mail is a fact about them, not about the message that made them
@@ -813,161 +799,9 @@ Item {
     onTriggered: root.draftSavedToast = ""
   }
 
-  // Opened on the cursor rather than on the selection, the way every other
-  // acting key works: `v` in the list means the row under the cursor, and in
-  // the reader there is only one message it could mean. Refuse an unavailable
-  // move before asking for a destination, through the same provider guard that
-  // checks the final action before its optimistic update.
-  // Opened on a message outside the ticks, the picker moves that one alone.
+  // Whether the label picker was opened on a row outside the ticks, which it
+  // then moves alone. ActionRouter sets it; the picker's choice reads it.
   property bool labelPickerOnlyCursor: false
-
-  function openLabelPicker(onlyCursor) {
-    if (!service || (cursorId === "" && !selectionActive)) return false
-    labelPickerOnlyCursor = onlyCursor === true
-    // A merged list draws no labels, so there is nothing to offer and the
-    // picker would open empty on a destination list it cannot fill — and a
-    // chosen id would belong to whichever mailbox happened to be active
-    // rather than to the row. Refused where it cannot be honoured, which is
-    // the same rule every other unavailable action follows.
-    // Only the merged-list refusal belongs here. A single mailbox whose
-    // provider has no move verb is the provider guard's answer, and saying
-    // "needs one mailbox on screen" over it would name the wrong reason.
-    if (service.unified) {
-      service.fail("Moving to a label needs one mailbox on screen")
-      return false
-    }
-    if (service.refuseUnavailableAction("label:destination", cursorId)) return false
-    labelPicker.open()
-    return true
-  }
-
-  // A row's own button: the selection when the row is ticked, that row alone
-  // when it is not — the rule the row menu follows, so a click and a key on
-  // the same row cannot mean different sets of messages.
-  function actFromRow(id, action) {
-    if (!service) return false
-    var outside = checkedIds.indexOf(id) < 0
-    cursorId = id
-    if (action === "star") {
-      if (selectionActive && !outside)
-        return actOnChecked(Model.starActionFor(Model.summariesById(service.messages, checkedIds)))
-      service.toggleStar(id)
-      return true
-    }
-    return actOnCursor(action, outside)
-  }
-
-  // The subject the popup names, from the row or the open message.
-  function agentSubjectFor(id) {
-    if (!service) return ""
-    var index = Model.indexById(service.messages, id)
-    if (index >= 0) return String(service.messages[index].subject || "")
-    if (service.selectedId === id && service.selectedMessage)
-      return String(service.selectedMessage.subject || "")
-    return ""
-  }
-
-  // With rows ticked, the ask is about all of them, one job with a count.
-  function openAgentAt(id, sceneX, sceneY) {
-    if (!service || !service.hasAgent) return false
-    if (selectionActive && checkedIds.indexOf(String(id || "")) >= 0) {
-      agentPrompt.openForSelection(checkedIds, sceneX, sceneY)
-      return true
-    }
-    if (String(id || "") === "") return false
-    agentPrompt.openFor(id, agentSubjectFor(id), sceneX, sceneY)
-    return true
-  }
-
-  function openAgentCentered(id) {
-    if (!service || !service.hasAgent) return false
-    if (selectionActive) {
-      var centre = root.mapToGlobal(Math.max(0, root.width / 2 - Style.space(190)),
-        Math.max(0, root.height / 2 - Style.space(90)))
-      agentPrompt.openForSelection(checkedIds, centre.x, centre.y)
-      return true
-    }
-    if (String(id || "") === "") return false
-    agentPrompt.openCenteredFor(id, agentSubjectFor(id))
-    return true
-  }
-
-  function openAgentFromRow(id, sceneX, sceneY) {
-    return openAgentAt(id, sceneX, sceneY)
-  }
-
-  // Acting on the open message closes it: it is about to leave this list.
-  //
-  // With rows ticked, the key means all of them rather than the one under the
-  // cursor — the same key, the same guard in `MailAccount`, one more row in
-  // the request. `onlyCursor` is for the row menu opened on a row outside the
-  // selection, which means that row and nothing else.
-  function actOnCursor(action, onlyCursor) {
-    if (!service) return false
-    if (selectionActive && onlyCursor !== true) return actOnChecked(action)
-    if (cursorId === "") return false
-    var acted = cursorId
-    var row = service.messages[Model.indexById(service.messages, acted)]
-    // "Was open" is the conversation's: with the rail up the reader can be
-    // showing a member of the acted row rather than the row itself, and
-    // archiving from a member has to open the next row or go back rather than
-    // leave a message that has just moved on screen.
-    //
-    // And a preview is not open at all. It satisfies "is this the selected
-    // one" without having been opened, which made `e` on a previewed row call
-    // `openMessage` on the *next* one — an archive that reads a message, which
-    // is the fault this feature exists to avoid.
-    var wasOpen = currentView === "reader" && !service.selectionIsPreview
-      && (service.selectedId === acted || Model.rowHoldsMember(row, service.selectedId))
-    // Worked out before the action, while the row still has neighbours.
-    var next = Model.cursorAfterRemoval(service.messages, acted)
-    // The same six facts `MailAccount.act` decides with. Asking with three of
-    // them made the cursor repair disagree with the list it repairs: moving a
-    // message back to the inbox removes the row on a provider that moves, and
-    // this read it as staying. The row itself is the sixth: a conversation
-    // answers on its recomputed block, so a mark-read in the Unread view keeps
-    // the row while a reply is still unread.
-    var leaves = !Model.survivesAction(service.mailboxKey, action,
-      service.rawQuery, service.hasLabels, service.rawLabelId, row)
-    if (!service.act(acted, action)) return false
-    if (!leaves) return true
-    // The row is going and the cursor must not go with it: a cursor on a
-    // message that is no longer listed cannot be found, so the next j restarts
-    // at the top. Archiving one message used to send it back to the first row.
-    if (wasOpen) {
-      if (next !== "") openMessage(next)
-      else backToList()
-      return true
-    }
-    cursorId = next
-    revealCursorRow()
-    return true
-  }
-
-  // Acting on one member from its stop on the rail: the one message and not
-  // the conversation, whichever member it is. If it was the message on screen
-  // and the action takes it out of this view, the reader moves to the
-  // neighbouring stop — the newer one above, else the older below — rather
-  // than sitting on a message that has just left; a conversation with no other
-  // stop goes back to the list, as the list's own delete does.
-  function actOnMember(action, id) {
-    var member = String(id || "")
-    if (!service || member === "") return false
-    var wasOpen = currentView === "reader" && service.selectedId === member
-    // Worked out before the action, while the member is still a stop.
-    var projection = service.conversationProjection || ({})
-    var stop = (projection.navigation || ({}))[member]
-    var next = stop ? String(stop.neighbor || "") : ""
-    var members = service.memberSummaries
-    var summary = members && typeof members === "object" ? members[member] : null
-    var leaves = !Model.survivesAction(service.mailboxKey, action,
-      service.rawQuery, service.hasLabels, service.rawLabelId, summary || null)
-    if (!service.act(member, action, false, true)) return false
-    if (!leaves || !wasOpen) return true
-    if (next !== "") openMember(next)
-    else backToList()
-    return true
-  }
 
   function goMailbox(key) {
     if (!service) return
