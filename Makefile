@@ -161,6 +161,7 @@ test-js:
 	node ui/tests/test_unified.js
 	node ui/tests/test_aliases.js
 	node ui/tests/test_menu.js
+	node ui/tests/test_when.js
 	node ui/tests/test_provider.js
 	node ui/tests/test_imap.js
 	node ui/tests/test_jmap.js
