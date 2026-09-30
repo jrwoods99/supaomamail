@@ -189,6 +189,9 @@ async fn attempt(
             return Err(match response.status().as_u16() {
                 403 if rate_limited(&mut response).await => "gmail_rate_limited",
                 403 => "gmail_forbidden",
+                // A message deleted elsewhere: a snooze wake forgets it rather
+                // than trying again forever.
+                404 => "gmail_not_found",
                 411 => "gmail_length_required",
                 429 => "gmail_rate_limited",
                 _ => "gmail_http_failed",

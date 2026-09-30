@@ -106,6 +106,17 @@ assert.deepStrictEqual(JSON.parse(JSON.stringify(wire.notification(JSON.stringif
 for (const params of [{ticket:7,ok:true,error:"",accountId:"a"},{ticket:"7",ok:"yes",error:"",accountId:"a"},{ticket:"7",ok:true,accountId:"a"},{ticket:"7",ok:true,error:""}])
   assert.strictEqual(wire.notification(JSON.stringify({...settled,params})),null)
 
+// A woken snooze names a sender and a subject: text, and nothing but text.
+const snoozed = {jsonrpc:"2.0",method:"snooze.changed",params:{accountId:"a@example.org",revision:"3",
+  woken:[{messageId:"m1",subject:"<b>Contract</b>",from:"Dana"}]}}
+assert.deepStrictEqual(JSON.parse(JSON.stringify(wire.notification(JSON.stringify(snoozed)))), snoozed)
+assert.ok(wire.notification(JSON.stringify({...snoozed,params:{accountId:"a",revision:"4",woken:[]}})))
+for (const params of [{revision:"3",woken:[]},{accountId:"a",revision:3,woken:[]},{accountId:"a",revision:"3"},
+    {accountId:"a",revision:"3",woken:[{messageId:"m1",subject:"s"}]},{accountId:"a",revision:"3",woken:["m1"]},
+    {accountId:"a",revision:"3",woken:[{messageId:1,subject:"s",from:"f"}]}])
+  assert.strictEqual(wire.notification(JSON.stringify({...snoozed,params})),null,JSON.stringify(params))
+assert.strictEqual(wire.notification(JSON.stringify({...snoozed,method:"snooze.woke"})),null,"only the declared event")
+
 // Exercise Backend.receive itself and count actual parser calls in each module.
 const fs = require('fs')
 const vm = require('vm')

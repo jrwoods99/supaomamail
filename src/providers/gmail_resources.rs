@@ -42,7 +42,11 @@ pub(super) fn normalize(method: &str, answer: Value) -> Value {
             if id.is_empty() { return None; }
             let name = text(&label["name"]);
             let raw = if name.is_empty() {id} else {name};
-            Some(json!({"id":id,"name":display(id,raw),"rawName":raw,"system":text(&label["type"])=="system",
+            // The app's own labels (the Snoozed one) are machinery, not
+            // somewhere a person files mail: the rail, the move picker and the
+            // label tree leave them out the way they leave out Gmail's own.
+            let own = raw.starts_with("Omamail/");
+            Some(json!({"id":id,"name":display(id,raw),"rawName":raw,"system":own||text(&label["type"])=="system",
                 "unread":count(&label["messagesUnread"]),"total":count(&label["messagesTotal"]),"threadsUnread":count(&label["threadsUnread"])}))
         }).collect()),
         "gmail.labelCounts" => json!({"id":text(&answer["id"]),"unread":count(&answer["messagesUnread"]),"total":count(&answer["messagesTotal"]),"threadsUnread":count(&answer["threadsUnread"])}),
@@ -78,6 +82,29 @@ mod tests {
                 {"id":"Label_12","name":"Receipts","rawName":"Receipts","system":false,"unread":0,"total":9,"threadsUnread":0}
             ])
         );
+    }
+
+    #[test]
+    fn the_apps_own_labels_are_machinery_not_somewhere_to_file_mail() {
+        let labels = normalize(
+            "gmail.labels",
+            json!({"labels":[
+                {"id":"Label_40","name":"Omamail/Snoozed","type":"user"},
+                {"id":"Label_41","name":"Omamail","type":"user"},
+                {"id":"Label_42","name":"Projects/Omamail/Notes","type":"user"}
+            ]}),
+        );
+        assert_eq!(labels[0]["system"], true);
+        assert_eq!(
+            labels[0]["rawName"],
+            crate::snooze::LABEL,
+            "found again by the name it was made with"
+        );
+        assert_eq!(
+            labels[1]["system"], false,
+            "a label a person named Omamail is theirs"
+        );
+        assert_eq!(labels[2]["system"], false);
     }
 
     #[test]

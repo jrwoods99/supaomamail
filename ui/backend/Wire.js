@@ -30,7 +30,7 @@ function notification(line) {
 
 function notificationValue(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)
-      || value.jsonrpc !== "2.0" || ["mail.updated", "accounts.changed", "outbox.changed", "gmail.settled"].indexOf(value.method) < 0
+      || value.jsonrpc !== "2.0" || ["mail.updated", "accounts.changed", "outbox.changed", "gmail.settled", "snooze.changed"].indexOf(value.method) < 0
       || Object.prototype.hasOwnProperty.call(value, "id")
       || !value.params || typeof value.params !== "object" || Array.isArray(value.params)
       || Object.keys(value).some(function(key) { return ["jsonrpc", "method", "params"].indexOf(key) < 0 })) return null
@@ -42,5 +42,19 @@ function notificationValue(value) {
   if (value.method === "gmail.settled"
       && (typeof value.params.accountId !== "string" || typeof value.params.ticket !== "string"
           || typeof value.params.ok !== "boolean" || typeof value.params.error !== "string")) return null
+  if (value.method === "snooze.changed" && !snoozeChanged(value.params)) return null
   return value
+}
+
+// What woke carries a sender's subject and name, which are plain text to be
+// shown and nothing else; anything shaped otherwise is not this event.
+function snoozeChanged(params) {
+  if (typeof params.accountId !== "string" || typeof params.revision !== "string"
+      || !Array.isArray(params.woken) || params.woken.length > 1000) return false
+  for (var i = 0; i < params.woken.length; i++) {
+    var woken = params.woken[i]
+    if (!woken || typeof woken !== "object" || typeof woken.messageId !== "string"
+        || typeof woken.subject !== "string" || typeof woken.from !== "string") return false
+  }
+  return true
 }

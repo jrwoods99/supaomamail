@@ -18,5 +18,6 @@ pub mod platform;
 pub mod process;
 pub mod providers;
 pub mod public_http;
+pub mod snooze;
 pub mod sync;
 pub mod tls;

@@ -19,6 +19,7 @@ pub struct Session {
     auth: crate::auth::Session,
     jmap: std::sync::Arc<crate::providers::jmap::Session>,
     outbox: crate::outbox::Outbox,
+    snooze: crate::snooze::Snoozer,
     queries: std::sync::Arc<crate::cache::query::QueryCache>,
     renders: std::sync::Arc<std::sync::Mutex<crate::cache::render::RenderCache>>,
     intents: std::sync::Arc<crate::account::intents::IntentStore>,
@@ -35,6 +36,15 @@ impl Default for Session {
             let jmap = sender_jmap.clone();
             Box::pin(async move { crate::outbox::delivery::send(&job, &gmail, &jmap).await })
         }));
+        // Snoozes wake through the same queued Gmail session the window's own
+        // actions use, and wait for each change to land before recording it.
+        let snooze_gmail = gmail.clone();
+        let snooze = crate::snooze::Snoozer::new(std::sync::Arc::new(
+            move |method: &'static str, params: Value| {
+                let gmail = snooze_gmail.clone();
+                Box::pin(async move { gmail.call_settled(method, &params).await })
+            },
+        ));
         let queries = std::sync::Arc::new(crate::cache::query::QueryCache::default());
         Self {
             uploads: Default::default(),
@@ -47,6 +57,7 @@ impl Default for Session {
             auth: Default::default(),
             jmap,
             outbox,
+            snooze,
             queries,
             renders: Default::default(),
             intents: Default::default(),
@@ -115,6 +126,9 @@ impl Session {
         }
         if method.starts_with("outbox.") {
             return Box::pin(self.outbox.call(method, params)).await;
+        }
+        if method.starts_with("snooze.") {
+            return Box::pin(self.snooze.call(method, params)).await;
         }
         if method == "model.intent" {
             let intents = self.intents.clone();
