@@ -47,18 +47,24 @@ Item {
       title = Model.pluralize(list.length, "new message")
       body = names.join(", ")
     }
+    announce(title, body, String(list[0].id || ""))
+  }
+
+  // One notification in the caller's words, opening `messageId` when clicked:
+  // mail back from snooze is announced this way, since it is not new.
+  function announce(title, body, messageId) {
+    var id = String(messageId || "")
     if (nativeNotifications && typeof Quickshell.showNotification === "function") {
-      Quickshell.showNotification(root.accountId + ":" + String(list[0].id || ""),
-        title, body, root.accountId, String(list[0].id || ""))
+      Quickshell.showNotification(root.accountId + ":" + id, title, body, root.accountId, id)
       return
     }
     if (!pluginNotifications) return
     // Sender-authored text stays behind "--", never in options or shell code.
     var request = notificationProcessComponent.createObject(root, {
       targetAccountId: root.accountId,
-      messageId: String(list[0].id || ""),
+      messageId: id,
       command: ["python3", root.pluginDir + "/scripts/notify-mail.py",
-        root.notificationForeground, root.notificationAccent, "--", title, body]
+        root.notificationForeground, root.notificationAccent, "--", String(title), String(body)]
     })
     if (request) request.running = true
   }

@@ -277,11 +277,25 @@ deepEqual(listHints.map(function (h) { return h.key + " " + h.label }),
   "the status bar offers what the list can do, in its short form")
 const selectedListHints = keymap.hintsFor("list", [], true)
 deepEqual(selectedListHints.map(function (h) { return h.key + " " + h.label }),
-  ["j / k move", "e archive", "d trash", "v move to", "Space select", "c compose"],
-  "the move hint joins the existing row only while a message is selected")
+  ["j / k move", "e archive", "d trash", "v move to", "h snooze", "Space select", "c compose"],
+  "the move and snooze hints join the existing row only while a message is selected")
 assert.ok(!keymap.hintsFor("list", ["move"], true).some(function (h) {
   return h.key === "v"
 }), "a provider without move does not offer the move hint")
+assert.ok(!keymap.hintsFor("reader", ["snooze"], true).some(function (h) {
+  return h.key === "h"
+}), "a mailbox that cannot snooze does not offer the snooze hint")
+{
+  // `h` asked for, and `b` for Gmail's hands; the calendar's `h` is its own.
+  const snooze = byId("snooze")
+  deepEqual(snooze.keys, ["h", "b"])
+  for (const context of ["list", "reader"])
+    assert.strictEqual(keymap.isEnabled(snooze, context, false), true, context)
+  for (const context of ["calendar", "compose", "search", "page"])
+    assert.strictEqual(keymap.isEnabled(snooze, context, false), false, context)
+  assert.strictEqual(keymap.isEnabled(snooze, "list", true), false,
+    "not behind the shortcut sheet")
+}
 const composeHints = keymap.hintsFor("compose")
 deepEqual(composeHints.map(function (h) { return h.label }),
   ["send", "close"],

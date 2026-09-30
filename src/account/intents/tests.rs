@@ -120,6 +120,41 @@ fn importance_is_a_capability_and_keeps_the_row() {
     );
 }
 #[test]
+fn a_snooze_is_a_capability_and_leaves_the_inbox_until_its_time() {
+    let store = IntentStore::default();
+    let snooze = "snooze:1790003600000";
+    for capabilities in [json!({}), json!({"snooze": false})] {
+        let refused = store.call(&json!({"operation":"begin","accountId":"one","query":"inbox|25","generation":1,"view":view(),"action":snooze,"ids":["a"],"capabilities":capabilities})).unwrap();
+        assert_eq!(refused, json!({"refused":true,"capability":"snooze"}));
+    }
+    assert!(store.state.lock().unwrap().contexts.is_empty());
+    let begin_in = |mailbox: &str, action: &str| {
+        store.call(&json!({"operation":"begin","accountId":"one","query":format!("{mailbox}|25"),"generation":1,"view":view(),"action":action,"ids":["a"],"mailboxKey":mailbox,"hasLabels":true,"capabilities":{"snooze":true}})).unwrap()
+    };
+    let snoozed = begin_in("inbox", snooze);
+    assert_eq!(snoozed["change"], json!({"add":[],"remove":["INBOX"]}));
+    assert_eq!(snoozed["targets"], json!(["a"]));
+    assert_eq!(
+        list(&snoozed["view"]["messages"]).len(),
+        2,
+        "the row leaves the inbox"
+    );
+    let again = begin_in("snoozed", "snooze:1790007200000");
+    assert_eq!(
+        list(&again["view"]["messages"]).len(),
+        3,
+        "snoozed again from the Snoozed list, it stays there"
+    );
+    let back = begin_in("snoozed", "unsnooze");
+    assert_eq!(back["change"], json!({"add":["INBOX"],"remove":[]}));
+    assert_eq!(list(&back["view"]["messages"]).len(), 2);
+    assert_eq!(
+        store.call(&json!({"operation":"begin","accountId":"one","query":"inbox|25","generation":1,"view":view(),"action":"snooze:soon","ids":["a"],"capabilities":{"snooze":true}})),
+        Err("intent_invalid"),
+        "a time that is not one is no verb at all"
+    );
+}
+#[test]
 fn member_only_and_conversation_targets_replay_thread_flags() {
     let store = IntentStore::default();
     let mut initial = view();

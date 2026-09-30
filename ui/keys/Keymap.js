@@ -88,6 +88,13 @@ var BINDINGS = [
     group: "Acting", label: "Move to",
     hint: { list: "move to", reader: "move to" },
     hintNeedsSelection: true, hintUnavailableId: "move" },
+  // Out of the Inbox until a typed time. `h` is Superhuman's key for it and
+  // `b` is Gmail's, one for one as issue #58 asks; the calendar's own `h` is
+  // another context. A popup, like `v`, that answers its own keys once open.
+  { id: "snooze", keys: ["h", "b"], contexts: MAIL,
+    group: "Acting", label: "Snooze until a time",
+    hintKey: "h", hint: { list: "snooze", reader: "snooze" },
+    hintNeedsSelection: true },
   { id: "markRead", keys: ["Shift+I"], contexts: MAIL,
     group: "Acting", label: "Mark read" },
   { id: "markUnread", keys: ["Shift+U"], contexts: MAIL,
@@ -158,9 +165,10 @@ var BINDINGS = [
     group: "Writing", label: "Previous guest suggestion" },
   { id: "guestChoose", keys: ["Return", "Enter"], contexts: ["eventGuests"],
     group: "Writing", label: "Choose guest suggestion" },
+  // The send still waiting first, and otherwise the snooze just made.
   { id: "undoSend", keys: ["Alt+Z"], contexts: ANY,
     survivesOverlay: true,
-    group: "Writing", label: "Undo send" },
+    group: "Writing", label: "Undo send or snooze" },
 
   // Reachable from the mailbox. `/` is a bare key, so it is only offered where
   // bare keys mean anything — inside the field it is a character being typed,

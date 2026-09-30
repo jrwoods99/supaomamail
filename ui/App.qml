@@ -248,7 +248,9 @@ Item {
     id: actionRouter
     app: root
     picker: labelPicker
+    snoozer: snoozePicker
   }
+  function openSnoozePicker(onlyCursor) { return actionRouter.openSnoozePicker(onlyCursor) }
   function actOnChecked(action) { return actionRouter.actOnChecked(action) }
   function actOnCursor(action, onlyCursor) { return actionRouter.actOnCursor(action, onlyCursor) }
   function actOnMember(action, id) { return actionRouter.actOnMember(action, id) }
@@ -619,7 +621,7 @@ Item {
   // the cursor remains the anchor for the next key press.
   function moveCursor(delta) {
     if (!service || (focusScope.keyContext !== "list" && focusScope.keyContext !== "reader")
-        || labelPicker.opened) return
+        || labelPicker.opened || snoozePicker.opened) return
     var next = service.cursorOffset(cursorId, delta)
     if (next === "") return
     cursorId = next
@@ -880,6 +882,7 @@ Item {
     }
     if (id === "checkAll") return checkAll()
     if (id === "moveToLabel") return openLabelPicker()
+    if (id === "snooze") return openSnoozePicker()
     if (id === "markRead") return actOnCursor("markRead")
     if (id === "markUnread") return actOnCursor("markUnread")
     if (id === "markImportant") return actOnCursor("markImportant")
@@ -908,7 +911,7 @@ Item {
     if (id === "guestNext") return eventComposer.moveGuestSuggestion(1)
     if (id === "guestPrevious") return eventComposer.moveGuestSuggestion(-1)
     if (id === "guestChoose") return eventComposer.chooseGuestSuggestion()
-    if (id === "undoSend") { undoPendingSend(); return }
+    if (id === "undoSend") { undoPendingSend() || (!!service && !!service.snoozes && service.snoozes.undo()); return }
     if (id === "search") return searchBar.focusField()
     if (id === "goMailbox") return goSlot(Keymap.slotFor(id, sequence))
     if (id === "nextSplit" || id === "previousSplit")
@@ -1009,7 +1012,8 @@ Item {
       root.clearChecksIfForeign()
       root.cursorId = ""
       root.closeLabelPopups()
-      // The agent popup is about one account's message too.
+      // The agent popup and the snooze picker are about one account's message too.
+      snoozePicker.close()
       agentPrompt.close()
       composeAgent.close()
       composeExitDialog.close()
@@ -1961,6 +1965,7 @@ Item {
                 || root.cursorId === "")
               root.cursorId = root.service.selectedId
             if (action === "moveToLabel") return root.openLabelPicker(outside)
+            if (action === "snooze") return root.openSnoozePicker(outside)
             root.actOnCursor(action, outside)
           }
         }
@@ -2256,6 +2261,7 @@ Item {
       }
 
       UndoSendToast {
+        id: undoSendToast
         anchors.right: parent.right
         anchors.rightMargin: Style.space(16)
         anchors.bottom: statusBar.top
@@ -2275,6 +2281,7 @@ Item {
       }
 
       DraftSavedToast {
+        id: draftSavedToast
         anchors.right: parent.right
         anchors.rightMargin: Style.space(16)
         anchors.bottom: statusBar.top
@@ -2287,6 +2294,26 @@ Item {
         popupBackgroundColor: root.popupBackground
         popupBorderColor: root.popupBorder
         panelFontFamily: root.fontFamily
+      }
+
+      // Above the other two when they are up: all three share this corner.
+      SnoozedToast {
+        objectName: "snoozed-toast"
+        anchors.right: parent.right
+        anchors.rightMargin: Style.space(16)
+        anchors.bottom: statusBar.top
+        anchors.bottomMargin: Style.space(12)
+          + (undoSendToast.visible ? undoSendToast.height + Style.space(8) : 0)
+          + (draftSavedToast.visible ? draftSavedToast.height + Style.space(8) : 0)
+        z: 80
+        snooze: !!root.service && !!root.service.snoozes ? root.service.snoozes.latest : null
+        visible: !!snooze
+        textColor: root.foreground
+        accentColor: root.accent
+        popupBackgroundColor: root.popupBackground
+        popupBorderColor: root.popupBorder
+        panelFontFamily: root.fontFamily
+        onUndoRequested: root.service.snoozes.undo()
       }
 
       // --------------------------------------------------------- status bar
@@ -2778,6 +2805,20 @@ Item {
         }
       }
 
+      SnoozePicker {
+        id: snoozePicker
+        objectName: "snooze-picker"
+        anchors.fill: parent
+        textColor: root.foreground
+        accentColor: root.accent
+        dimColor: root.dim
+        popupBackgroundColor: root.popupBackground
+        popupBorderColor: root.popupBorder
+        panelFontFamily: root.fontFamily
+        onTimeChosen: function(at) { actionRouter.snoozeChosen(at) }
+        onUnsnoozeChosen: actionRouter.unsnoozeChosen()
+      }
+
       ComposeExitDialog {
         id: composeExitDialog
         objectName: "compose-exit-dialog"
@@ -2843,6 +2884,7 @@ Item {
           var outside = root.checkedIds.indexOf(id) < 0
           root.cursorId = id
           if (action === "moveToLabel") return root.openLabelPicker(outside)
+          if (action === "snooze") return root.openSnoozePicker(outside)
           if ((action === "star" || action === "unstar") && root.selectionActive && !outside)
             return root.actOnChecked(Model.starActionFor(Model.summariesById(root.service.messages, root.checkedIds)))
           root.actOnCursor(action, outside)

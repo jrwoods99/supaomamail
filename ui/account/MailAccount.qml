@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Io
 import "../providers"
 import "../cache"
+import "../snooze"
 
 import "../message/Html.js" as Html
 import "../providers/GmailApi.js" as Api
@@ -137,6 +138,8 @@ Item {
   // older backend would refuse as unknown after the row had changed.
   readonly property bool canMarkImportant: Provider.can(providerId, "important", capabilityRefusals)
     && !!backend && backend.ready && backend.apiVersion >= 6
+  // Kept by the backend's own worker, so only a backend that has one.
+  readonly property bool canSnooze: snoozer.serves
   readonly property bool canMove: Provider.can(providerId, "move", capabilityRefusals)
   readonly property bool hasLabels: Provider.can(providerId, "labels")
   readonly property bool canOpenOnWeb: Provider.can(providerId, "web")
@@ -156,7 +159,7 @@ Item {
   // read one answer rather than each asking the registry its own way.
   readonly property var actionCapabilities: ({
     archive: canArchive, star: canStar, spam: canReportSpam, move: canMove,
-    important: canMarkImportant })
+    important: canMarkImportant, snooze: canSnooze })
   // The key-bound actions this mailbox cannot honour, for the hint row. The
   // buttons are hidden by the three properties above; the keys are bound
   // whatever provider is open, so the row that says what the keyboard does here
@@ -1924,6 +1927,8 @@ Item {
           }
         } else if (action === "trash") root.api.trashMessage(targets.length > 1 ? targets : targets[0], done)
         else if (action === "untrash") root.api.untrashMessage(targets.length > 1 ? targets : targets[0], done)
+        // The backend keeps a snooze, and moves the labels itself.
+        else if (Model.actionCapability(action) === "snooze") snoozer.send(action, targets, done)
         else if (targets.length > 1) root.api.batchModify(targets, change.add, change.remove, done)
         else root.api.modifyMessage(targets[0], change.add, change.remove, done)
       }
@@ -1964,6 +1969,7 @@ Item {
     if (action === "markUnread") return "Marked unread"
     if (action === "unarchive") return "Moved to Inbox"
     if (action === "spam") return "Reported as spam"
+    if (Model.actionCapability(action) === "snooze") return snoozer.label(action)
     // Named, not "Moved": the destination was chosen a keystroke ago from a
     // list of thirty, and a note that does not say which one leaves the only
     // question the user has -- did it go where I meant? -- unanswered.
@@ -2440,6 +2446,7 @@ Item {
   }
 
   function notify(arrivals) { newMailNotification.notify(arrivals) }
+  function announce(title, body, id) { if (notifyNewMail) newMailNotification.announce(title, body, id) }
   readonly property alias labelActions: labelActions
   // The watched ids after a rename or move changed what they name.
   signal monitoredMigrated(var ids)
@@ -2451,6 +2458,13 @@ Item {
 
   InboxSplits {
     id: splits
+    account: root
+  }
+
+  // What is snoozed here and until when; see `ui/snooze/SnoozeClient.qml`.
+  readonly property var snoozes: snoozer
+  SnoozeClient {
+    id: snoozer
     account: root
   }
 

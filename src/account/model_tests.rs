@@ -82,17 +82,27 @@ fn native_conversation_actions_golden() {
         "spam",
         "trash",
         "label:Work",
+        "snooze:1790003600000",
+        "unsnooze",
+        // Not snoozes: each must read as nothing on both sides.
+        "snooze:",
+        "snooze:0",
+        "snooze:12x",
+        "snooze:1234567890123456",
     ] {
         calls.push(json!({"operation":"actionTargets","args":[representative,action]}));
         calls.push(json!({"operation":"actionTargets","args":[{"id":"hey:posting","thread":{"count":0,"memberIds":[]}},action]}));
         calls.push(json!({"operation":"applyLabelChange","args":[representative,action,"Label_Work",null]}));
         calls.push(json!({"operation":"threadAfterAction","args":[representative,action]}));
-        for mailbox in ["inbox", "unread", "starred", "trash"] {
+        for mailbox in ["inbox", "unread", "starred", "trash", "snoozed"] {
             calls.push(json!({"operation":"survivesAction","args":[mailbox,action,"",true,"",representative]}));
         }
     }
     calls.push(json!({"operation":"threadAfterMemberChange","args":[representative,members]}));
-    compare(json!(calls));
+    // A batch takes at most 128 calls.
+    for chunk in calls.chunks(128) {
+        compare(json!(chunk));
+    }
 }
 #[test]
 fn refused_capability_is_side_effect_free_and_quiet_read_stays_open() {

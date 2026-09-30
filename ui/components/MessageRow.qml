@@ -4,6 +4,7 @@ import qs.Ui
 import "../message/Direction.js" as Direction
 import "../account/Model.js" as Model
 import "../keys/Keymap.js" as Keymap
+import "../snooze/When.js" as When
 
 // One message in the list. Unread is carried by weight and by the dot on the
 // left, never by colour alone — the accent is a theme value that some themes
@@ -27,6 +28,10 @@ Rectangle {
   // Whether the mailbox keeps Gmail's importance marker. Told, like the
   // archive: a row that cannot change the marker must not draw one.
   property bool showsImportance: false
+  // When a snoozed message comes back, in epoch milliseconds, or 0. Drawn in
+  // the time lane in place of when it arrived, with the snooze glyph so the
+  // two cannot be mistaken for each other.
+  property double wakeAt: 0
   // Whether this row stands for a conversation rather than for one message.
   // Grouping is a panel rule gated on the provider's `conversations`
   // capability; a row is told, and asks nobody.
@@ -164,8 +169,9 @@ Rectangle {
       width: parent.width
       implicitHeight: Math.max(sender.implicitHeight, time.implicitHeight)
       // What the text before the time stops at: the importance marker where it
-      // is drawn, the time itself where it is not.
-      readonly property Item beforeTime: importance.visible ? importance : time
+      // is drawn, else the snooze glyph, else the time itself.
+      readonly property Item beforeTime: importance.visible ? importance
+        : (wakeMark.visible ? wakeMark : time)
 
       Text {
         id: sender
@@ -238,7 +244,7 @@ Rectangle {
       ActionIcon {
         id: importance
         objectName: "message-important"
-        anchors.right: time.left
+        anchors.right: wakeMark.visible ? wakeMark.left : time.left
         anchors.rightMargin: Style.space(6)
         anchors.verticalCenter: time.verticalCenter
         visible: root.showsImportance && Model.isImportant(root.summary)
@@ -255,13 +261,32 @@ Rectangle {
         }
       }
 
+      ActionIcon {
+        id: wakeMark
+        objectName: "message-snoozed"
+        anchors.right: time.left
+        anchors.rightMargin: Style.space(4)
+        anchors.verticalCenter: time.verticalCenter
+        visible: root.wakeAt > 0
+        name: "snooze"
+        iconSize: Style.font.caption
+        color: root.dimColor
+
+        HoverHandler { id: wakeHover }
+        PanelToolTip {
+          visible: wakeHover.hovered
+          text: "Back " + When.describe(root.wakeAt, Date.now())
+          fontFamily: root.panelFontFamily
+        }
+      }
+
       Text {
         id: time
         objectName: "message-time"
         anchors.right: parent.right
         anchors.baseline: sender.baseline
         textFormat: Text.PlainText
-        text: root.summary.time
+        text: root.wakeAt > 0 ? When.compact(root.wakeAt, Date.now()) : root.summary.time
         color: root.dimColor
         font.family: root.panelFontFamily
         font.pixelSize: Style.font.caption

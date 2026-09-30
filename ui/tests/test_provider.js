@@ -195,7 +195,7 @@ assert.strictEqual(provider.unavailableReason("hey"), "")
 
 // The glyphs ActionIcon actually draws. A mailbox naming anything else renders
 // as nothing at all.
-const DRAWN = ["inbox", "unread", "star", "sent", "archive", "trash", "spam", "reply", "pin", "label", "compose"]
+const DRAWN = ["inbox", "unread", "star", "sent", "archive", "trash", "spam", "reply", "pin", "label", "compose", "snooze"]
 
 // Every provider's first mailbox is its inbox: `mailboxFor` falls back to it,
 // which is what a key belonging to another provider lands on mid-switch.
@@ -224,6 +224,20 @@ for (const id of ["gmail", "imap"]) {
   assert.ok(spam[0].optional, id + "/spam yields the strip before the inbox does")
 }
 assert.strictEqual(provider.mailboxes("hey").filter(box => box.key === "spam").length, 0)
+
+// Snoozed is Gmail's, listed only by a backend that keeps snoozes, and last,
+// so every mailbox above it keeps the Ctrl digit it had.
+for (const api of [5, 6]) {
+  const gmail = provider.mailboxes("gmail", [], api).map(box => box.key)
+  assert.strictEqual(gmail.indexOf("snoozed"), api >= 6 ? gmail.length - 1 : -1, "api " + api)
+}
+assert.strictEqual(provider.mailboxFor("gmail", "snoozed").query, "label:omamail-snoozed",
+  "the label the backend files a snoozed message under, as Gmail searches for it")
+for (const id of ["hey", "outlook", "imap", "jmap"]) {
+  assert.strictEqual(provider.hasMailbox(id, "snoozed"), false, id)
+  assert.strictEqual(provider.can(id, "snooze"), false, id)
+}
+assert.strictEqual(provider.can("gmail", "snooze"), true)
 
 // A mutation of the returned list must not reach the provider definition.
 const boxes = provider.mailboxes("gmail")

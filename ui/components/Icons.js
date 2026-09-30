@@ -25,6 +25,7 @@ var GLYPHS = {
   unread: 0xF01F0,       // email-outline
   star: 0xF04D2,         // star-outline
   important: 0xF0ACE,    // label-variant-outline — Gmail's importance marker
+  snooze: 0xF068E,       // alarm-snooze — out of the Inbox until a time
   browser: 0xF03CC,      // open-in-new
   refresh: 0xF0450,      // refresh
   send: 0xF048A,         // send — the plane, solid: the outline one hatches at 16px

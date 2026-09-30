@@ -119,12 +119,24 @@ pub(crate) fn action_targets_checked(
 fn target(action: &str) -> &str {
     action.strip_prefix("label:").unwrap_or("")
 }
+/// When a snooze brings the message back, in epoch milliseconds, or 0 for
+/// every other verb. The time travels inside the verb as a move's destination
+/// does, so two snoozes to different times are two actions to the queue.
+pub fn snooze_until(action: &str) -> u64 {
+    action
+        .strip_prefix("snooze:")
+        .filter(|at| (1..=15).contains(&at.len()) && at.bytes().all(|b| b.is_ascii_digit()))
+        .and_then(|at| at.parse().ok())
+        .unwrap_or(0)
+}
 pub fn capability(action: &str) -> &'static str {
     match action {
         "archive" | "unarchive" => "archive",
         "star" | "unstar" => "star",
         "markImportant" | "markNotImportant" => "important",
         "spam" => "spam",
+        "unsnooze" => "snooze",
+        a if snooze_until(a) > 0 => "snooze",
         a if !target(a).is_empty() => "move",
         _ => "",
     }
@@ -163,6 +175,10 @@ pub fn changes(action: &str, source: &str) -> Value {
             },
         ),
         "spam" => (vec!["SPAM"], vec!["INBOX"]),
+        // What the list sees. The backend files the message under its own
+        // Snoozed label, and takes it off again, around this.
+        "unsnooze" => (vec!["INBOX"], vec![]),
+        a if snooze_until(a) > 0 => (vec![], vec!["INBOX"]),
         a if !target(a).is_empty() => {
             let mut remove = vec!["INBOX"];
             if !source.is_empty() && source != target(a) && source != "INBOX" {
@@ -300,7 +316,8 @@ pub fn survives(
         }
         a if !target(a).is_empty() && !query.is_empty() => false,
         "archive" => key != "inbox" && key != "unread",
-        a if !target(a).is_empty() => key != "inbox" && key != "unread",
+        a if !target(a).is_empty() || snooze_until(a) > 0 => key != "inbox" && key != "unread",
+        "unsnooze" => key != "snoozed",
         "markRead" => key != "unread",
         "unstar" => key != "starred",
         _ => true,

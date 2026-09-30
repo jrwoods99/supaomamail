@@ -37,6 +37,7 @@ three directories away from the client that calls it.
 | `ui/message/` | A message's own content: parsing it (`Message.js`) and making it safe to draw (`Html.js`). |
 | `ui/components/` | Views. They draw what they are given and decide nothing. |
 | `ui/agent/` | The message agent: presentation helpers in `Agent.js` and the thin `AgentRunner.qml` RPC adapter. Rust `src/agent/` owns context, durable task state and detached native worker processes; see `docs/AGENT.md`. |
+| `ui/snooze/` | Snoozing: reading a typed time into instants in `When.js`, and `SnoozeClient.qml`, one mailbox's thin adapter over the `snooze.*` methods. Rust `src/snooze/` keeps the wake times and wakes the mail. |
 
 - `tests/test_qml_names.py` checks the entry points under `ui/`, and any QML
   file the Makefile does not list — a file `qmllint` never sees is a file nobody

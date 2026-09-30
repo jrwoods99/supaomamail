@@ -87,6 +87,9 @@ Column {
       ctrlHeld: root.ctrlHeld
       canArchive: root.service.canArchive
       showsImportance: root.service.canMarkImportant === true
+      // In the Snoozed mailbox a row says when it comes back.
+      wakeAt: root.service.mailboxKey === "snoozed" && !!root.service.snoozes
+        ? Number(root.service.snoozes.wakeTimes[String(modelData.id)] || 0) : 0
       conversations: Unified.rowIsConversation(modelData)
       contentDirection: root.service.contentDirection
       onActivated: root.messageActivated(modelData.id)

@@ -282,6 +282,23 @@ function labelTarget(action) {
   return verb.slice(MOVE_PREFIX.length)
 }
 
+// When a snooze brings the message back, in epoch milliseconds, or 0 for every
+// other verb. The time rides in the verb for the reason a move's destination
+// does, and it makes two snoozes to different times two actions to the queue
+// rather than one coalesced into the other.
+var SNOOZE_PREFIX = "snooze:"
+
+function snoozeUntil(action) {
+  var verb = String(action || "")
+  if (verb.indexOf(SNOOZE_PREFIX) !== 0) return 0
+  var at = verb.slice(SNOOZE_PREFIX.length)
+  return /^[0-9]{1,15}$/.test(at) ? Number(at) : 0
+}
+
+function snoozeAction(at) {
+  return SNOOZE_PREFIX + Math.floor(Number(at) || 0)
+}
+
 // After an action the message may no longer belong in the mailbox being
 // viewed. Archiving from Inbox removes the row; archiving from All mail does
 // not. Getting this wrong either strands a row that is gone or hides one that
@@ -333,8 +350,11 @@ function survivesAction(mailboxKey, action, rawQuery, labels, sourceLabelId, row
   // lists archive leaves. Said once, because two branches with the same answer
   // are two places for it to drift.
   if (labelTarget(verb) !== "" && String(rawQuery || "") !== "") return false
-  if (verb === "archive" || labelTarget(verb) !== "")
+  // A snooze too: the message is out of the Inbox until its time. One snoozed
+  // again from the Snoozed list stays there with its new time.
+  if (verb === "archive" || labelTarget(verb) !== "" || snoozeUntil(verb) > 0)
     return key !== "inbox" && key !== "unread"
+  if (verb === "unsnooze") return key !== "snoozed"
   if (verb === "markRead") return key !== "unread"
   if (verb === "unstar") return key !== "starred"
   return true
@@ -398,6 +418,10 @@ function labelChangesFor(action, sourceLabelId) {
     return { add: ["INBOX"], remove: [filed] }
   }
   if (action === "spam") return { add: ["SPAM"], remove: ["INBOX"] }
+  // What the list sees. The backend files the message under its own Snoozed
+  // label, and takes it off again, around this.
+  if (action === "unsnooze") return { add: ["INBOX"], remove: [] }
+  if (snoozeUntil(action) > 0) return { add: [], remove: ["INBOX"] }
   // A move is archive with somewhere to go. Where a folder is a label, putting
   // a message in one is adding that label and taking INBOX away -- the same
   // pair archive already writes, with the destination filled in.
@@ -514,6 +538,7 @@ function actionCapability(action) {
   if (verb === "star" || verb === "unstar") return "star"
   if (verb === "markImportant" || verb === "markNotImportant") return "important"
   if (verb === "spam") return "spam"
+  if (verb === "unsnooze" || snoozeUntil(verb) > 0) return "snooze"
   if (labelTarget(verb) !== "") return "move"
   return ""
 }
@@ -527,6 +552,7 @@ function actionUnavailable(action, provider) {
   if (needs === "archive") return name + " has no archive"
   if (needs === "star") return name + " has no star"
   if (needs === "important") return name + " has no importance marker"
+  if (needs === "snooze") return name + " has no snooze"
   if (needs === "spam") return name + " has no junk verb to report to"
   if (needs === "move") return name + " has no destination you can name"
   return ""
@@ -541,6 +567,7 @@ function unavailableActions(capabilities) {
   if (caps.archive !== true) out.push("archive")
   if (caps.star !== true) out.push("star")
   if (caps.move !== true) out.push("move")
+  if (caps.snooze !== true) out.push("snooze")
   return out
 }
 
@@ -1342,6 +1369,31 @@ function notificationBody(summary) {
   var snippet = notificationText(String(summary.snippet || "").trim())
   if (!snippet) return subject
   return subject + "\n" + (snippet.length > 140 ? snippet.substring(0, 139) + "…" : snippet)
+}
+
+// What the desktop says when snoozed mail comes back, from `snooze.changed`'s
+// `woken`: [{ messageId, subject, from }]. Not "new message" -- it is old mail,
+// and the snooze is the reason it is announced. Null when nothing woke.
+function snoozeNotice(woken) {
+  var list = Array.isArray(woken) ? woken : []
+  if (list.length === 0) return null
+  var first = list[0] || {}
+  var id = String(first.messageId || "")
+  if (list.length === 1) {
+    var parts = []
+    var from = notificationText(String(first.from || "").trim())
+    var subject = notificationText(String(first.subject || "").trim())
+    if (from !== "") parts.push(from)
+    if (subject !== "") parts.push(subject)
+    return { title: "Back from snooze", body: parts.join(" — "), messageId: id }
+  }
+  var names = []
+  for (var i = 0; i < list.length && names.length < 3; i++) {
+    var name = notificationText(String(list[i] && list[i].from || "").trim())
+    if (name !== "" && names.indexOf(name) < 0) names.push(name)
+  }
+  return { title: pluralize(list.length, "message") + " back from snooze",
+    body: names.join(", "), messageId: id }
 }
 
 // ------------------------------------------------------------- formatting

@@ -132,6 +132,7 @@ used to exist, and they had.
 | `trash` | `d` | mail | Move to trash |
 | `star` | `s` | mail | Star or unstar |
 | `moveToLabel` | `v` | mail | Move to |
+| `snooze` | `h`, `b` | mail | Snooze until a time |
 | `markRead` | `Shift+I` | mail | Mark read |
 | `markUnread` | `Shift+U` | mail | Mark unread |
 | `markImportant` | `+`, `=` | mail | Mark important |
@@ -159,7 +160,7 @@ used to exist, and they had.
 | `guestNext` | `Down` | eventGuests | Next guest suggestion |
 | `guestPrevious` | `Up` | eventGuests | Previous guest suggestion |
 | `guestChoose` | `Return`, `Enter` | eventGuests | Choose guest suggestion |
-| `undoSend` | `Alt+Z` | all | Undo send |
+| `undoSend` | `Alt+Z` | all | Undo send or snooze |
 | `search` | `/` | mail | Search |
 | `goMailbox` | `Ctrl+1`, `Ctrl+2`, `Ctrl+3`, `Ctrl+4`, `Ctrl+5`, `Ctrl+6`, `Ctrl+7`, `Ctrl+8`, `Ctrl+9` | mail | Go to that mailbox |
 | `nextSplit` | `Tab` | mail | Next Inbox tab |

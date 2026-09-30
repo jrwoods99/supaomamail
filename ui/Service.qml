@@ -1741,6 +1741,10 @@ Item {
   // The visible mailbox's Inbox tabs. A merged list is several Inboxes, and
   // one mailbox's Primary is not a place the others have.
   readonly property var inboxTabs: unified || !current ? null : current.inboxTabs
+  // The visible mailbox's snoozes. A merged list is refused them: a time is
+  // picked for one mailbox's messages, and its Undo belongs to that one.
+  readonly property var snoozes: unified || !current ? null : current.snoozes
+  readonly property bool canSnooze: !unified && !!current && current.canSnooze
   readonly property var mailboxes: unified
     ? (unifiedSnapshot.mailboxes || [])
     : (current ? current.mailboxes : Provider.mailboxes(Provider.DEFAULT_ID))

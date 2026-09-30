@@ -956,6 +956,102 @@
       }
     },
     {
+      "name": "Snoozing takes a message out of the Inbox until its time",
+      "method": "model.intent",
+      "params": {
+        "operation": "begin",
+        "accountId": "contract@example.org",
+        "query": "in:inbox|75",
+        "generation": 1,
+        "view": {
+          "messages": [
+            {
+              "id": "contract-message",
+              "labelIds": [
+                "INBOX"
+              ],
+              "unread": false,
+              "starred": false,
+              "inInbox": true
+            }
+          ],
+          "previewMessages": [],
+          "memberSummaries": {},
+          "selectedId": "",
+          "selectedMessage": null,
+          "selectedThread": null,
+          "inboxUnread": 0
+        },
+        "action": "snooze:1790003600000",
+        "ids": [
+          "contract-message"
+        ],
+        "mailboxKey": "inbox",
+        "hasLabels": true,
+        "capabilities": {
+          "snooze": true
+        }
+      },
+      "equals": {
+        "refused": false,
+        "change": {
+          "add": [],
+          "remove": [
+            "INBOX"
+          ]
+        },
+        "targets": [
+          "contract-message"
+        ],
+        "view.messages": []
+      },
+      "types": {
+        "token": "number"
+      }
+    },
+    {
+      "name": "Snoozing is refused where the mailbox cannot keep one",
+      "method": "model.intent",
+      "params": {
+        "operation": "begin",
+        "accountId": "contract@example.org",
+        "query": "in:inbox|100",
+        "generation": 1,
+        "view": {
+          "messages": [
+            {
+              "id": "contract-message",
+              "labelIds": [
+                "INBOX"
+              ],
+              "unread": false,
+              "starred": false,
+              "inInbox": true
+            }
+          ],
+          "previewMessages": [],
+          "memberSummaries": {},
+          "selectedId": "",
+          "selectedMessage": null,
+          "selectedThread": null,
+          "inboxUnread": 0
+        },
+        "action": "unsnooze",
+        "ids": [
+          "contract-message"
+        ],
+        "mailboxKey": "snoozed",
+        "hasLabels": true,
+        "capabilities": {
+          "archive": true
+        }
+      },
+      "equals": {
+        "refused": true,
+        "capability": "snooze"
+      }
+    },
+    {
       "name": "Snoozes start with nothing waiting",
       "method": "snooze.snapshot",
       "params": {},
@@ -1013,6 +1109,6 @@
   ],
   "unreleased": {
     "methods": ["calendar.attendance", "calendar.reminders", "snooze.snapshot", "snooze.set", "snooze.cancel", "snooze.wake"],
-    "cases": ["IMAP All mail resolves to account-wide listing", "IMAP text search includes archived mail", "Outlook text search includes archived mail", "IMAP address search includes archived mail", "IMAP account search refuses an expired work continuation", "IMAP account search refuses a malformed page cursor", "Google calendar identity is validated before authentication", "Google attendance rejects unsupported answers before authentication", "Google attendance requires the invitation organizer before authentication", "Reminder actions validate before opening the ledger", "Reminder view cache has an independent namespace", "Simultaneous reminders retain each event identity", "Importance marks a message without leaving the list", "Importance is refused where the mailbox has no marker", "Snoozes start with nothing waiting", "Snooze refuses a wake time already due", "Snooze refuses a message id that is not Gmail's", "Snooze refuses unknown fields"]
+    "cases": ["IMAP All mail resolves to account-wide listing", "IMAP text search includes archived mail", "Outlook text search includes archived mail", "IMAP address search includes archived mail", "IMAP account search refuses an expired work continuation", "IMAP account search refuses a malformed page cursor", "Google calendar identity is validated before authentication", "Google attendance rejects unsupported answers before authentication", "Google attendance requires the invitation organizer before authentication", "Reminder actions validate before opening the ledger", "Reminder view cache has an independent namespace", "Simultaneous reminders retain each event identity", "Importance marks a message without leaving the list", "Importance is refused where the mailbox has no marker", "Snoozing takes a message out of the Inbox until its time", "Snoozing is refused where the mailbox cannot keep one", "Snoozes start with nothing waiting", "Snooze refuses a wake time already due", "Snooze refuses a message id that is not Gmail's", "Snooze refuses unknown fields"]
   }
 }

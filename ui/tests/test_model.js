@@ -839,11 +839,48 @@ assert.strictEqual(model.isImportant({ id: "i2", labelIds: ["INBOX"], important:
 assert.strictEqual(model.importanceActionFor({ id: "i3" }), "markImportant")
 assert.strictEqual(model.isImportant(null), false)
 
-deepEqual(model.unavailableActions({ archive: true, star: true, spam: true, move: true }), [])
+deepEqual(model.unavailableActions({ archive: true, star: true, spam: true, move: true, snooze: true }), [])
 deepEqual(model.unavailableActions({ archive: false, star: false, move: false }),
-  ["archive", "star", "move"])
-deepEqual(model.unavailableActions(null), ["archive", "star", "move"],
+  ["archive", "star", "move", "snooze"])
+deepEqual(model.unavailableActions(null), ["archive", "star", "move", "snooze"],
   "an unknown provider offers nothing it cannot prove")
+
+// Snoozing: the time rides in the verb, and the list sees an archive until it.
+{
+  const at = new Date(2026, 8, 30, 15, 0).getTime()
+  assert.strictEqual(model.snoozeAction(at), "snooze:" + at)
+  assert.strictEqual(model.snoozeUntil(model.snoozeAction(at)), at)
+  for (const bad of ["snooze:", "snooze:0", "snooze:12x", "snooze:-5", "snooze:1e12",
+    "snooze:1234567890123456", "archive", "label:snooze:5", "", null])
+    assert.strictEqual(model.snoozeUntil(bad), 0, String(bad))
+  assert.strictEqual(model.actionCapability("snooze:" + at), "snooze")
+  assert.strictEqual(model.actionCapability("unsnooze"), "snooze")
+  assert.strictEqual(model.actionCapability("snooze:x"), "", "not a snooze at all")
+  deepEqual(model.labelChangesFor("snooze:" + at, "Label_1"), { add: [], remove: ["INBOX"] })
+  deepEqual(model.labelChangesFor("unsnooze", "Label_1"), { add: ["INBOX"], remove: [] })
+  assert.strictEqual(model.labelChangesFor("snooze:0"), null)
+  assert.strictEqual(model.actionUnavailable("unsnooze", "Outlook"), "Outlook has no snooze")
+  for (const [key, snoozed, unsnoozed] of [["inbox", false, true], ["unread", false, true],
+    ["snoozed", true, false], ["starred", true, true], ["all", true, true]]) {
+    assert.strictEqual(model.survivesAction(key, "snooze:" + at, ""), snoozed, "snooze in " + key)
+    assert.strictEqual(model.survivesAction(key, "unsnooze", ""), unsnoozed, "unsnooze in " + key)
+  }
+  deepEqual(model.unavailableActions({ archive: true, star: true, move: true }), ["snooze"],
+    "a provider with no snooze is told so in the hints")
+
+  // Back from snooze: old mail, announced for the snooze rather than as new.
+  assert.strictEqual(model.snoozeNotice([]), null)
+  assert.strictEqual(model.snoozeNotice(null), null)
+  deepEqual(model.snoozeNotice([{ messageId: "m1", subject: " Contract redline ", from: "Dana Park" }]),
+    { title: "Back from snooze", body: "Dana Park — Contract redline", messageId: "m1" })
+  deepEqual(model.snoozeNotice([{ messageId: "m1", subject: "", from: "Dana Park" }]).body, "Dana Park")
+  deepEqual(model.snoozeNotice([
+    { messageId: "m1", subject: "a", from: "Dana" }, { messageId: "m2", subject: "b", from: "Dana" },
+    { messageId: "m3", subject: "c", from: "Lee" }, { messageId: "m4", subject: "d", from: "Kim" },
+    { messageId: "m5", subject: "e", from: "Ola" }]),
+    { title: "5 messages back from snooze", body: "Dana, Lee, Kim", messageId: "m1" },
+    "each sender once, three at most; opening it reads the first")
+}
 
 // The number a row's badge shows, and the floor under it: two or more on a
 // provider that grouped its listing, else nothing — a count of 0 is a provider
@@ -1784,5 +1821,5 @@ assert.strictEqual(model.monitoredNote([]), "")
 }
 
 // A provider with no move verb is told so in the hints, the way archive is.
-deepEqual(model.unavailableActions({ archive: true, star: true, move: true }), [])
-deepEqual(model.unavailableActions({ archive: true, star: true }), ["move"])
+deepEqual(model.unavailableActions({ archive: true, star: true, move: true, snooze: true }), [])
+deepEqual(model.unavailableActions({ archive: true, star: true, snooze: true }), ["move"])

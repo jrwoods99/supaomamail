@@ -21,6 +21,7 @@ function capabilities(values) {
     spam: raw.spam === true,
     star: raw.star === true,
     important: raw.important === true,
+    snooze: raw.snooze === true,
     batch: raw.batch === true,
     web: raw.web === true,
     webBox: raw.webBox === true,

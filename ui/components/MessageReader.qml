@@ -943,8 +943,11 @@ Item {
         // No archive button where the account has nowhere to archive to. On
         // IMAP that is a move to a folder, and a server without one would have
         // this quietly do nothing — or worse, delete.
+        // Each of the buttons a mailbox may not have says where the row has
+        // reached after it, drawn or not, so the next one starts there.
         IconButton {
           id: archiveButton
+          readonly property real end: visible ? x + width : actionGap.x + actionGap.width
           x: actionGap.x + actionGap.width + messageActions.gap
           y: Math.round((parent.height - height) / 2)
           visible: !root.service || root.service.canArchive
@@ -957,22 +960,29 @@ Item {
         IconButton {
           id: moveButton
           objectName: "reader-move-button"
-          x: (archiveButton.visible
-            ? archiveButton.x + archiveButton.width
-            : actionGap.x + actionGap.width) + messageActions.gap
+          readonly property real end: visible ? x + width : archiveButton.end
+          x: archiveButton.end + messageActions.gap
           y: Math.round((parent.height - height) / 2)
           visible: !!root.service && root.service.canMoveToLabel
           iconName: "label"; tooltipText: "Move to... · v"
           foreground: root.dimColor; hoverColor: root.textColor; fontFamily: root.panelFontFamily
           onClicked: root.actionRequested("moveToLabel")
         }
+        // Out of the Inbox until a time: the picker `h` opens.
+        IconButton {
+          id: snoozeButton
+          objectName: "reader-snooze-button"
+          readonly property real end: visible ? x + width : moveButton.end
+          x: moveButton.end + messageActions.gap
+          y: Math.round((parent.height - height) / 2)
+          visible: !!root.service && root.service.canSnooze === true
+          iconName: "snooze"; tooltipText: "Snooze... · h"
+          foreground: root.dimColor; hoverColor: root.textColor; fontFamily: root.panelFontFamily
+          onClicked: root.actionRequested("snooze")
+        }
         IconButton {
           id: trashButton
-          x: (moveButton.visible
-            ? moveButton.x + moveButton.width
-            : (archiveButton.visible
-              ? archiveButton.x + archiveButton.width
-              : actionGap.x + actionGap.width)) + messageActions.gap
+          x: snoozeButton.end + messageActions.gap
           y: Math.round((parent.height - height) / 2)
           iconName: "trash"; tooltipText: "Move to trash · d"
           foreground: root.dimColor; hoverColor: root.textColor; fontFamily: root.panelFontFamily

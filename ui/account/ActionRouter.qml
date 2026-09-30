@@ -11,7 +11,11 @@ QtObject {
   id: router
   required property var app
   required property var picker
+  required property var snoozer
   readonly property var service: app ? app.service : null
+  // Whether the snooze picker was opened on a row outside the ticks, which it
+  // then snoozes alone: the label picker's rule.
+  property bool snoozeOnlyCursor: false
 
   // Acting on the selection acts on every ticked row at once, then drops the
   // selection: the rows it named have moved or changed, and a selection that
@@ -68,6 +72,54 @@ QtObject {
     if (service.refuseUnavailableAction("label:destination", app.cursorId)) return false
     picker.open()
     return true
+  }
+
+  // The same shape as the move picker: on the cursor, or on the ticks, and
+  // refused before it asks for a time wherever a snooze could not be kept. A
+  // merged list is several mailboxes, and a time is picked for one's messages.
+  function openSnoozePicker(onlyCursor) {
+    if (!service || (app.cursorId === "" && !app.selectionActive)) return false
+    router.snoozeOnlyCursor = onlyCursor === true
+    if (service.unified) {
+      service.fail("Snoozing needs one mailbox on screen")
+      return false
+    }
+    if (service.refuseUnavailableAction("unsnooze", app.cursorId)) return false
+    snoozer.open(router.snoozedUntil())
+    return true
+  }
+
+  function snoozeTargets() {
+    if (app.selectionActive && !router.snoozeOnlyCursor) return app.checkedIds.slice()
+    return app.cursorId === "" ? [] : [app.cursorId]
+  }
+
+  // When the messages about to be snoozed come back, if every one of them is
+  // snoozed already, or 0: the picker then offers to bring them back now.
+  function snoozedUntil() {
+    var snoozes = service ? service.snoozes : null
+    var ids = router.snoozeTargets()
+    if (!snoozes || ids.length === 0) return 0
+    var first = 0
+    for (var i = 0; i < ids.length; i++) {
+      var at = snoozes.wakeAt(ids[i])
+      if (at <= 0) return 0
+      if (first === 0) first = at
+    }
+    return first
+  }
+
+  // The picker's answer, sent the way every other action is: a snooze is
+  // optimistic like an archive and put back if the backend refuses it. From
+  // here the last snooze is no longer the one Undo takes back, even while
+  // this one waits its turn behind another action.
+  function snoozeChosen(at) {
+    if (service && service.snoozes) service.snoozes.supersede()
+    return router.actOnCursor(Model.snoozeAction(at), router.snoozeOnlyCursor)
+  }
+
+  function unsnoozeChosen() {
+    return router.actOnCursor("unsnooze", router.snoozeOnlyCursor)
   }
 
   // A row's own button: the selection when the row is ticked, that row alone

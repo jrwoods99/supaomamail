@@ -26,6 +26,10 @@ const CAPABILITIES: &[&str] = &[
     // Gmail's importance marker: the IMPORTANT label a message can carry or
     // not. No other provider has one, and none is invented for them.
     "important",
+    // Out of the Inbox until a chosen time, kept by the backend's own worker
+    // (`crate::snooze`). Only Gmail, where a label holds the message while it
+    // is away and every other client sees it there.
+    "snooze",
     "batch",
     "web",
     "webBox",
@@ -67,6 +71,7 @@ const PROVIDERS: &[Provider] = &[
             "spam",
             "star",
             "important",
+            "snooze",
             "batch",
             "web",
             "webBox",
@@ -224,14 +229,16 @@ mod tests {
         }
         assert_eq!(providers[0]["capabilities"]["conversations"], false);
         assert_eq!(providers[2]["capabilities"]["conversations"], true);
-        // The importance marker is Gmail's alone.
+        // The importance marker and snoozing are Gmail's alone.
         for provider in providers {
-            assert_eq!(
-                provider["capabilities"]["important"],
-                provider["id"] == "gmail",
-                "{}",
-                provider["id"]
-            );
+            for capability in ["important", "snooze"] {
+                assert_eq!(
+                    provider["capabilities"][capability],
+                    provider["id"] == "gmail",
+                    "{} {capability}",
+                    provider["id"]
+                );
+            }
         }
     }
 }

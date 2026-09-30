@@ -7,6 +7,7 @@
     "inbox:otherUnread": "in:inbox is:unread {category:promotions category:social category:forums}",
     "unread": "in:inbox is:unread -category:promotions -category:social -category:forums",
     "starred": "is:starred",
+    "snoozed": "label:omamail-snoozed",
     "sent": "in:sent",
     "drafts": "in:drafts",
     "all": "in:anywhere -in:spam -in:trash",

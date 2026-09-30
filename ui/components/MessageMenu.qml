@@ -29,7 +29,7 @@ Item {
   property real anchorY: 0
   property int cursorIndex: -1
   readonly property var menuRows: [continueRow, replyRow, replyAllRow, forwardRow, archiveRow,
-    unarchiveRow, moveRow,
+    unarchiveRow, moveRow, snoozeRow,
     trashRow, spamRow, readRow, starRow, importantRow, browserRow, aiRow]
   // Whether this message is archived — out of the inbox and not somewhere
   // that has its own verb. Read off the summary the menu was opened on rather
@@ -215,6 +215,14 @@ Item {
         visible: !!root.service && root.service.canMoveToLabel && !root.memberOnly
         text: "Move to..."
         onActivated: root.run("moveToLabel")
+      }
+      // The picker `h` opens. Like a move, the row's own and not a member's.
+      MenuRow {
+        id: snoozeRow
+        objectName: "message-menu-snooze"
+        visible: !!root.service && root.service.canSnooze === true && !root.memberOnly
+        text: "Snooze..."
+        onActivated: root.run("snooze")
       }
       MenuRow { id: trashRow; text: "Move to trash"; tone: root.urgentColor; onActivated: root.run("trash") }
       MenuRow {

@@ -46,6 +46,7 @@ QML_FILES := ui/Service.qml ui/BarWidget.qml ui/App.qml ui/compose/RecoveryContr
 	ui/components/RecipientSuggestions.qml \
 	ui/components/ContactsPicker.qml \
 	ui/components/LabelPicker.qml \
+	ui/components/SnoozePicker.qml ui/components/SnoozedToast.qml ui/snooze/SnoozeClient.qml \
 	ui/components/UndoSendToast.qml \
 	ui/components/DraftSavedToast.qml \
 	ui/components/SearchBar.qml \

@@ -141,6 +141,36 @@ Item {
       }
     }
 
+    // Mail back from snooze is old mail, announced for its snooze rather than
+    // as new, and opening the notification reads it like any other.
+    function test_mail_back_from_snooze_is_announced_as_such() {
+      var account = service.findAccount(second)
+      service.backend.receive(JSON.stringify({ jsonrpc: "2.0", method: "snooze.changed", params: {
+        accountId: second, revision: "4",
+        woken: [{ messageId: "woken-1", subject: "Contract redline", from: "--urgency=critical" }] } }))
+      var process = null
+      tryVerify(function() { process = latestNotification(account); return !!process }, 1000)
+      var separator = process.command.indexOf("--")
+      verify(separator > 0)
+      compare(process.command.length, separator + 3)
+      compare(process.command[separator + 1], "Back from snooze")
+      compare(process.command[separator + 2], "--urgency=critical — Contract redline",
+        "sender text stays behind the separator")
+      finish(process, "default\n")
+      tryCompare(service, "selectedId", "woken-1")
+      compare(service.activeAccountId, second)
+    }
+
+    function test_a_snooze_change_for_another_mailbox_says_nothing_here() {
+      var account = service.findAccount(second)
+      service.backend.receive(JSON.stringify({ jsonrpc: "2.0", method: "snooze.changed", params: {
+        accountId: "someone@example.org", revision: "5",
+        woken: [{ messageId: "elsewhere", subject: "Hi", from: "Kim" }] } }))
+      wait(50)
+      compare(latestNotification(account), null)
+      compare(latestNotification(service.findAccount(first)), null)
+    }
+
     function test_removed_account_is_ignored() {
       service.openNotification("gone@example.org", "message")
       compare(host.opens, 0)

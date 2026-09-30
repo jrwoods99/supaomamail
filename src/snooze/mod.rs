@@ -534,8 +534,10 @@ impl Inner {
         self.snapshot(Some(account)).await
     }
 
-    /// Back to the Inbox now, where it was: no reminder and no unread mark,
-    /// because this is the snooze being taken back rather than ending.
+    /// Back to the Inbox now, read or unread as it was: no reminder and no
+    /// unread mark, because this is the snooze being taken back rather than
+    /// ending. A message snoozed from outside the Inbox comes back into it
+    /// too; the file keeps no record of where each one was.
     async fn cancel(&self, account: &str, ids: &[String]) -> Result<Value> {
         self.relabel(account, ids, false).await?;
         let (owned, wanted) = (account.to_owned(), ids.to_vec());

@@ -63,5 +63,14 @@ var MAILBOXES = [
     "label": "Trash",
     "icon": "trash",
     "optional": true
+  },
+  // What is snoozed, and when each comes back. Last, so every mailbox above
+  // keeps the Ctrl digit it had; only a backend that keeps snoozes lists it.
+  {
+    "key": "snoozed",
+    "label": "Snoozed",
+    "icon": "snooze",
+    "optional": true,
+    "minimumApiVersion": 6
   }
 ]
