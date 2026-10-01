@@ -413,10 +413,20 @@ async fn production_jmap_dispatch_previews_all_actions_without_local_writes() {
         fs::create_dir_all(directory).unwrap();
         fs::write(directory.join("sentinel"), b"unchanged synthetic state").unwrap();
     }
-    fs::create_dir_all(fixture.state.join("omamail")).unwrap();
-    fs::write(fixture.state.join("omamail/outbox.json"), b"[]\n").unwrap();
+    fs::create_dir_all(fixture.state.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
     fs::write(
-        fixture.config.join("omamail/compose.json"),
+        fixture
+            .state
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.json"),
+        b"[]\n",
+    )
+    .unwrap();
+    fs::write(
+        fixture
+            .config
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("compose.json"),
         b"{\"version\":1,\"active\":false}\n",
     )
     .unwrap();
@@ -483,8 +493,15 @@ async fn production_jmap_send_preview_only_reads_identity_and_preserves_storage(
         "accounts":[{"provider":"jmap","email":"user@example.test"}]}));
     let attachment = fixture.root.join("quote\\工\".txt");
     fs::write(&attachment, b"synthetic attachment").unwrap();
-    fs::create_dir_all(fixture.state.join("omamail")).unwrap();
-    fs::write(fixture.state.join("omamail/outbox.json"), b"[]\n").unwrap();
+    fs::create_dir_all(fixture.state.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
+    fs::write(
+        fixture
+            .state
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.json"),
+        b"[]\n",
+    )
+    .unwrap();
     let before = fixture_tree(&fixture.root);
     let (peer, session) = Peer::start("send-preview", true).await;
     let params = json!({"to":["工 <one@example.org>"],"subject":"Preview 工",

@@ -92,7 +92,7 @@ pub fn call(params: &Value) -> Result<Value> {
 
 fn call_at(root: &Path, params: &Value) -> Result<Value> {
     validate(params)?;
-    let dir = crate::cache::directories(root, &["omamail"], true)?
+    let dir = crate::cache::directories(root, &[crate::platform::dirs::APP_DIRECTORY], true)?
         .ok_or("calendar_reminders_unavailable")?;
     let _lock = match crate::platform::private_fs::lock_exclusive(&dir, ".calendar-reminders.lock")
     {
@@ -242,7 +242,9 @@ mod tests {
 
         // An older ledger may still carry a bundled action target. It must not
         // let dismissing one event overwrite the other event's later snooze.
-        let path = root.join("omamail/calendar-reminders.json");
+        let path = root
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("calendar-reminders.json");
         let mut ledger: Value = serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
         let first = notices[0]["key"].as_str().unwrap();
         let second = notices[1]["key"].as_str().unwrap();
@@ -335,7 +337,9 @@ mod tests {
         {
             let outside = root.join("outside");
             std::fs::write(&outside, b"private marker").unwrap();
-            let ledger = root.join("omamail/calendar-reminders.json");
+            let ledger = root
+                .join(crate::platform::dirs::APP_DIRECTORY)
+                .join("calendar-reminders.json");
             std::fs::remove_file(&ledger).unwrap();
             std::os::unix::fs::symlink(&outside, &ledger).unwrap();
             assert!(call_at(&root, &poll).is_err());

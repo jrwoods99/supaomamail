@@ -158,8 +158,12 @@ impl Store {
         {
             return Err("agent_state_home_invalid");
         }
-        let root = crate::cache::directories(base, &["omamail", "assistant"], true)?
-            .ok_or("agent_storage_unavailable")?;
+        let root = crate::cache::directories(
+            base,
+            &[crate::platform::dirs::APP_DIRECTORY, "assistant"],
+            true,
+        )?
+        .ok_or("agent_storage_unavailable")?;
         let fd = unsafe {
             libc::openat(
                 root.as_raw_fd(),
@@ -181,7 +185,9 @@ impl Store {
         Ok(Self {
             root,
             lock,
-            path: base.join("omamail/assistant"),
+            path: base
+                .join(crate::platform::dirs::APP_DIRECTORY)
+                .join("assistant"),
         })
     }
     pub fn path(&self) -> &Path {
@@ -443,10 +449,14 @@ mod tests {
     fn parent_and_job_symlinks_never_open_or_delete_their_target() {
         let temp = Temp::new();
         let outside = Temp::new();
-        std::os::unix::fs::symlink(&outside.0, temp.0.join("omamail")).unwrap();
+        std::os::unix::fs::symlink(
+            &outside.0,
+            temp.0.join(crate::platform::dirs::APP_DIRECTORY),
+        )
+        .unwrap();
         assert!(Store::open_at(&temp.0).is_err());
         assert!(!outside.0.join("assistant").exists());
-        std::fs::remove_file(temp.0.join("omamail")).unwrap();
+        std::fs::remove_file(temp.0.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
         let store = Store::open_at(&temp.0).unwrap();
         std::os::unix::fs::symlink(&outside.0, store.path().join(ID)).unwrap();
         assert!(store.ids().is_err());

@@ -28,7 +28,7 @@ class Diagnostics(unittest.TestCase):
         launcher.write_text('#!/usr/bin/env python3\nimport os,sys,json\nfrom pathlib import Path\n'
                             'Path(os.environ["XDG_STATE_HOME"]).joinpath("launched").write_text(json.dumps(sys.argv[1:]))\n')
         launcher.chmod(0o700)
-        self.folder = self.root / 'state/omamail/diagnostics'
+        self.folder = self.root / 'state/supaomamail/diagnostics'
 
     def call(self, mode, events=None, ok=True):
         result = subprocess.run(['python3', str(SCRIPT), mode],
@@ -250,7 +250,7 @@ class Diagnostics(unittest.TestCase):
         state.mkdir()
         outside = self.root / 'outside'
         outside.mkdir()
-        (state / 'omamail').symlink_to(outside, target_is_directory=True)
+        (state / 'supaomamail').symlink_to(outside, target_is_directory=True)
         self.call('record', [self.event()], ok=False)
         self.assertEqual(list(outside.iterdir()), [])
 

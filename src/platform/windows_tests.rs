@@ -32,7 +32,9 @@ impl Temp {
         Self(root)
     }
     fn private(&self) -> File {
-        directories(&self.0, &["omamail"], true).unwrap().unwrap()
+        directories(&self.0, &[crate::platform::dirs::APP_DIRECTORY], true)
+            .unwrap()
+            .unwrap()
     }
 }
 impl Drop for Temp {
@@ -162,7 +164,10 @@ fn windows_rejects_traversal_dos_aliases_streams_junctions_and_hardlinks() {
         assert!(atomic_replace(&dir, name, b"bad").is_err(), "{name}");
         assert!(remove_owned(&dir, name).is_err(), "{name}");
     }
-    let linked = temp.0.join("omamail/linked");
+    let linked = temp
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("linked");
     fs::hard_link(&victim, &linked).unwrap();
     assert!(regular(&dir, "linked", true).is_err());
     assert!(atomic_replace(&dir, "linked", b"bad").is_err());
@@ -189,7 +194,10 @@ fn windows_private_acl_is_protected_and_inherited_read_grants_are_refused() {
     let file = regular_readonly(&dir, "record").unwrap().unwrap();
     security::validate(file.as_raw_handle(), true).unwrap();
     drop(file);
-    let path = temp.0.join("omamail/record");
+    let path = temp
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("record");
     set_acl(&path, &own_acl("(A;;GR;;;WD)"), true);
     assert!(regular_readonly(&dir, "record").is_err());
     assert!(atomic_replace(&dir, "record", b"bad").is_err());
@@ -231,11 +239,17 @@ fn windows_atomic_writers_preserve_records_and_handles_survive_rename() {
     });
     assert_eq!(names(&dir).unwrap(), ["record"]);
     let moved = temp.0.join("moved");
-    fs::rename(temp.0.join("omamail"), &moved).unwrap();
-    fs::create_dir(temp.0.join("omamail")).unwrap();
+    fs::rename(temp.0.join(crate::platform::dirs::APP_DIRECTORY), &moved).unwrap();
+    fs::create_dir(temp.0.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
     atomic_replace(&dir, "record", b"anchored").unwrap();
     assert_eq!(fs::read(moved.join("record")).unwrap(), b"anchored");
-    assert!(!temp.0.join("omamail/record").exists());
+    assert!(
+        !temp
+            .0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("record")
+            .exists()
+    );
     remove_owned(&dir, "record").unwrap();
     assert!(!moved.join("record").exists());
 }
@@ -248,7 +262,10 @@ fn windows_exclusive_sharing_lease_blocks_write_rename_delete_and_releases() {
         lock_exclusive(&dir, "lease"),
         Err("private_fs_busy")
     ));
-    let path = temp.0.join("omamail/lease");
+    let path = temp
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("lease");
     assert!(fs::write(&path, b"bad").is_err());
     assert!(fs::remove_file(&path).is_err());
     assert!(fs::rename(&path, path.with_extension("moved")).is_err());
@@ -259,7 +276,9 @@ fn windows_exclusive_sharing_lease_blocks_write_rename_delete_and_releases() {
 fn windows_long_unicode_paths_and_unique_exports_preserve_existing_bytes() {
     let temp = Temp::new();
     let long = temp.0.join("資料".repeat(55)).join("長い名前".repeat(35));
-    let dir = directories(&long, &["omamail"], true).unwrap().unwrap();
+    let dir = directories(&long, &[crate::platform::dirs::APP_DIRECTORY], true)
+        .unwrap()
+        .unwrap();
     atomic_replace(&dir, "記録.json", b"private").unwrap();
     let mut file = regular_readonly(&dir, "記録.json").unwrap().unwrap();
     let mut bytes = Vec::new();
@@ -294,7 +313,11 @@ async fn windows_pipe_authenticates_rejects_squatting_and_follows_renamed_direct
     // directory rename used to prove that the endpoint follows its pinned
     // directory handle rather than reopening the old path.
     drop(lease);
-    fs::rename(temp.0.join("omamail"), temp.0.join("moved")).unwrap();
+    fs::rename(
+        temp.0.join(crate::platform::dirs::APP_DIRECTORY),
+        temp.0.join("moved"),
+    )
+    .unwrap();
     let mut client = endpoint.connect().await.unwrap();
     let (mut server, _) = listener.accept().await.unwrap();
     authenticate(&mut server).await.unwrap();
@@ -329,7 +352,9 @@ fn windows_lease_child_helper() {
         return;
     };
     let root = PathBuf::from(root);
-    let dir = directories_readonly(&root, &["omamail"]).unwrap().unwrap();
+    let dir = directories_readonly(&root, &[crate::platform::dirs::APP_DIRECTORY])
+        .unwrap()
+        .unwrap();
     let _lease = lock_exclusive(&dir, "lease").unwrap();
     fs::write(root.join("child-ready"), b"ready").unwrap();
     loop {

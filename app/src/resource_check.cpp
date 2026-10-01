@@ -284,8 +284,8 @@ ResourceCheck checkResources(const ResourcePaths &paths)
             ? QJsonDocument() : QJsonDocument::fromJson(bytes, &parseError);
         const QJsonObject value = document.object();
         if (bytes.size() > 1024 * 1024 || parseError.error != QJsonParseError::NoError
-            || !document.isObject() || value.value(QStringLiteral("id")).toString() != QStringLiteral("omamail")
-            || value.value(QStringLiteral("name")).toString() != QStringLiteral("Omamail")
+            || !document.isObject() || value.value(QStringLiteral("id")).toString() != QStringLiteral("supaomamail")
+            || value.value(QStringLiteral("name")).toString() != QStringLiteral("SupaOmaMail")
             || value.value(QStringLiteral("version")).toString() != QStringLiteral(OMAMAIL_APP_VERSION)) {
             result.errors.append(QStringLiteral("Invalid standalone manifest: %1")
                                      .arg(paths.manifest));

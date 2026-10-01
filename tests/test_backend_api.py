@@ -258,10 +258,10 @@ def main():
         if os.name == 'nt':
             config_root = home / 'AppData/Roaming'
             local_root = home / 'AppData/Local'
-            cache_root = local_root / 'OmamailData/Cache'
-            state_root = local_root / 'OmamailData/State'
-            data_root = local_root / 'OmamailData'
-            runtime_root = local_root / 'OmamailData/Runtime'
+            cache_root = local_root / 'SupaOmaMailData/Cache'
+            state_root = local_root / 'SupaOmaMailData/State'
+            data_root = local_root / 'SupaOmaMailData'
+            runtime_root = local_root / 'SupaOmaMailData/Runtime'
             env.update(USERPROFILE=str(home), APPDATA=str(config_root),
                        LOCALAPPDATA=str(local_root))
         elif sys.platform == 'darwin':
@@ -279,7 +279,7 @@ def main():
             env.update(XDG_CONFIG_HOME=str(config_root), XDG_CACHE_HOME=str(cache_root),
                        XDG_DATA_HOME=str(data_root), XDG_STATE_HOME=str(state_root),
                        XDG_RUNTIME_DIR=str(runtime_root))
-        registry = config_root / 'omamail/accounts.json'
+        registry = config_root / 'supaomamail/accounts.json'
         env.update(HOME=str(home), TMPDIR=str(runtime_root), TEMP=str(runtime_root),
                    TMP=str(runtime_root), CONTRACT_REGISTRY_PATH=str(registry),
                    CONTRACT_ROOT=str(ROOT), CONTRACT_BINARY=str(binary),
@@ -302,7 +302,7 @@ def main():
                                         'accounts': accounts}))
         registry.chmod(0o600)
         for root in (cache_root, state_root, data_root):
-            sentinel = root / 'omamail/sentinel'
+            sentinel = root / 'supaomamail/sentinel'
             sentinel.parent.mkdir(parents=True, exist_ok=True)
             if os.name != 'nt':
                 sentinel.parent.chmod(0o700)

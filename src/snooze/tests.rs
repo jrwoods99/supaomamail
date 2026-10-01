@@ -185,7 +185,7 @@ async fn a_snooze_files_the_message_under_the_label_and_out_of_the_inbox() {
         let f = rig.fake.lock().unwrap();
         assert_eq!(
             f.called("gmail.createLabel"),
-            vec![json!({"accountId":"me@example.org","name":"Omamail/Snoozed"})],
+            vec![json!({"accountId":"me@example.org","name":"SupaOmaMail/Snoozed"})],
             "the label is made the first time it is needed"
         );
         assert_eq!(
@@ -493,7 +493,7 @@ async fn an_interrupted_park_is_finished_or_forgotten() {
     {
         let mut f = rig.fake.lock().unwrap();
         f.labels
-            .push(json!({"id":"Label_9","rawName":"Omamail/Snoozed"}));
+            .push(json!({"id":"Label_9","rawName":"SupaOmaMail/Snoozed"}));
         f.messages.get_mut("m1").unwrap()["labelIds"] = json!(["Label_9"]);
     }
     *rig.memory.lock().unwrap() = storage::Memory::default();

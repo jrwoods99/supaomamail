@@ -37,8 +37,8 @@ int main(int argc, char *argv[])
             readyFile = QString::fromLocal8Bit(argv[++i]);
     }
 
-    QCoreApplication::setOrganizationName(QStringLiteral("Omamail"));
-    QCoreApplication::setApplicationName(QStringLiteral("Omamail"));
+    QCoreApplication::setOrganizationName(QStringLiteral("SupaOmaMail"));
+    QCoreApplication::setApplicationName(QStringLiteral("SupaOmaMail"));
     QCoreApplication::setApplicationVersion(QStringLiteral(OMAMAIL_APP_VERSION));
 
     if (checkOnly && readyFile.isEmpty()) {

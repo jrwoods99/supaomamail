@@ -10,8 +10,8 @@ pub(super) fn home() -> Result<PathBuf, &'static str> {
 }
 pub(super) type Lease = crate::platform::private_fs::ExclusiveLock;
 pub(super) fn lease(root: &Path) -> Result<Lease, &'static str> {
-    let dir =
-        crate::cache::directories(root, &["omamail"], true)?.ok_or("outbox_storage_unavailable")?;
+    let dir = crate::cache::directories(root, &[crate::platform::dirs::APP_DIRECTORY], true)?
+        .ok_or("outbox_storage_unavailable")?;
     crate::platform::private_fs::lock_exclusive(&dir, "outbox.lock").map_err(|error| match error {
         "private_fs_busy" => "outbox_in_use",
         "cache_unsafe_path" => "outbox_storage_unsafe",
@@ -19,7 +19,9 @@ pub(super) fn lease(root: &Path) -> Result<Lease, &'static str> {
     })
 }
 pub(super) fn read(root: &Path) -> Result<Value, &'static str> {
-    let Some(dir) = crate::cache::directories(root, &["omamail"], false)? else {
+    let Some(dir) =
+        crate::cache::directories(root, &[crate::platform::dirs::APP_DIRECTORY], false)?
+    else {
         return Ok(serde_json::json!([]));
     };
     let Some(mut file) = crate::cache::regular(&dir, "outbox.json", false)? else {
@@ -48,8 +50,8 @@ pub(super) fn write(root: &Path, value: &Value) -> Result<(), &'static str> {
     if bytes.len() > LIMIT {
         return Err("outbox_storage_too_large");
     }
-    let dir =
-        crate::cache::directories(root, &["omamail"], true)?.ok_or("outbox_storage_unavailable")?;
+    let dir = crate::cache::directories(root, &[crate::platform::dirs::APP_DIRECTORY], true)?
+        .ok_or("outbox_storage_unavailable")?;
     crate::platform::private_fs::atomic_replace(&dir, "outbox.json", &bytes).map_err(|error| {
         if error == "cache_unavailable" {
             "outbox_storage_unavailable"

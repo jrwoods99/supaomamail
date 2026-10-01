@@ -347,10 +347,10 @@ function httpResponse(statusLine, body) {
 
 function successResponse(theme) {
   return httpResponse("200 OK", themedPage(theme, {
-    title: "Omamail",
+    title: "SupaOmaMail",
     heading: "Mailbox connected",
     failed: false,
-    body: "<p>Omamail can read this mailbox now. "
+    body: "<p>SupaOmaMail can read this mailbox now. "
       + "Switch back to the window \u2014 your mail is already loading.</p>"
       + "<p>This tab closes itself. If it stays open, it is safe to close.</p>"
       + "<script>setTimeout(function(){window.close()},600)<\/script>"
@@ -364,6 +364,6 @@ function failureResponse(theme, reason) {
     heading: "Sign-in did not finish",
     failed: true,
     body: "<p>" + (detail ? escapeHtml(detail) : "Google did not complete the authorization.") + "</p>"
-      + "<p>Close this tab and try again from the Omamail window.</p>"
+      + "<p>Close this tab and try again from the SupaOmaMail window.</p>"
   }))
 }

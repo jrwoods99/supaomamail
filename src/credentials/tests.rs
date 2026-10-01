@@ -252,7 +252,7 @@ fn credentials_native_linux_retains_legacy_attribute_scopes() {
         .create_item(
             "Omamail synthetic legacy fixture",
             HashMap::from([
-                ("service", "omamail"),
+                ("service", crate::platform::dirs::APP_DIRECTORY),
                 ("kind", "refresh-token"),
                 ("client-id", "synthetic-client"),
                 ("account", account.as_str()),

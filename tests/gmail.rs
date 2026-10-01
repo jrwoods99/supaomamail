@@ -36,7 +36,7 @@ fn mail_gmail_actions_default_to_preview_and_keep_credential_failures_explicit()
     let dir = PathBuf::from(String::from_utf8(temp.stdout).unwrap().trim())
         .canonicalize()
         .unwrap();
-    let config = config_root(&dir, &dir).join("omamail");
+    let config = config_root(&dir, &dir).join(omamail::platform::dirs::APP_DIRECTORY);
     fs::create_dir_all(&config).unwrap();
     fs::write(config.join("accounts.json"),br#"{"version":1,"activeId":"a@example.org","accounts":[{"provider":"gmail","email":"a@example.org"}]}"#).unwrap();
     fs::set_permissions(&config, fs::Permissions::from_mode(0o700)).unwrap();
@@ -164,7 +164,8 @@ fn gmail_registry_and_private_credentials_gate_keyring_access() {
             .unwrap()
             .as_nanos()
     ));
-    let config = config_root(&dir, &dir.join(".config")).join("omamail");
+    let config =
+        config_root(&dir, &dir.join(".config")).join(omamail::platform::dirs::APP_DIRECTORY);
     fs::create_dir_all(&config).unwrap();
     let accounts = config.join("accounts.json");
     fs::write(

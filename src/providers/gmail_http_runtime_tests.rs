@@ -138,11 +138,18 @@ async fn mail_send_preview_reads_google_identity_without_mutation_or_local_write
             secret: crate::credentials::Secret::new(b"synthetic-refresh-token".to_vec()).unwrap(),
         });
     for root in [&fixture.cache, &fixture.state] {
-        let directory = root.join("omamail");
+        let directory = root.join(crate::platform::dirs::APP_DIRECTORY);
         std::fs::create_dir_all(&directory).unwrap();
         std::fs::write(directory.join("sentinel"), b"unchanged existing state").unwrap();
     }
-    std::fs::write(fixture.state.join("omamail/outbox.json"), b"[]\n").unwrap();
+    std::fs::write(
+        fixture
+            .state
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.json"),
+        b"[]\n",
+    )
+    .unwrap();
     let attachment = fixture.root.join("quote\\工\".txt");
     std::fs::write(&attachment, b"private attachment bytes").unwrap();
     let before = fixture_tree(&fixture.root);

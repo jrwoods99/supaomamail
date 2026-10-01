@@ -123,10 +123,13 @@ async fn owner_socket_refuses_symlinks_and_non_socket_entries_without_removing_t
     use std::os::unix::fs::symlink;
     for link in [true, false] {
         let dir = Temp::new();
-        std::fs::create_dir(dir.0.join("omamail")).unwrap();
+        std::fs::create_dir(dir.0.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
         let target = dir.0.join("sentinel");
         std::fs::write(&target, b"private sentinel").unwrap();
-        let socket = dir.0.join("omamail/outbox.sock");
+        let socket = dir
+            .0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.sock");
         if link {
             symlink(&target, &socket).unwrap();
         } else {
@@ -164,7 +167,10 @@ async fn owner_socket_refuses_symlinks_and_non_socket_entries_without_removing_t
 #[tokio::test]
 async fn one_shot_wait_does_not_claim_a_terminal_state_when_final_persistence_fails() {
     let dir = Temp::new();
-    let target = dir.0.join("omamail/outbox.json");
+    let target = dir
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("outbox.json");
     let outbox = Outbox::with_root(
         Arc::new(move |_| {
             let target = target.clone();
@@ -370,7 +376,10 @@ fn forked_child_descriptor_cannot_extend_the_last_owner_lease() {
     #[cfg(target_os = "linux")]
     let inherited = format!("/proc/{}/fd/{fd}", _child.0);
     #[cfg(target_os = "linux")]
-    let lock_path = dir.0.join("omamail/outbox.lock");
+    let lock_path = dir
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("outbox.lock");
     #[cfg(target_os = "linux")]
     assert_eq!(std::fs::read_link(&inherited).unwrap(), lock_path);
     drop(lease);
@@ -561,7 +570,12 @@ async fn delayed_undo_is_authoritative_and_never_invokes_executor() {
         .unwrap();
     tokio::time::sleep(Duration::from_millis(20)).await;
     assert_eq!(calls.load(Ordering::SeqCst), 0);
-    let bytes = std::fs::read(dir.0.join("omamail/outbox.json")).unwrap();
+    let bytes = std::fs::read(
+        dir.0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.json"),
+    )
+    .unwrap();
     assert!(
         String::from_utf8(bytes)
             .unwrap()
@@ -701,10 +715,16 @@ async fn uncertain_delivery_is_not_retried_and_restart_recovers_unsent() {
 async fn unsafe_storage_and_invalid_requests_cannot_send() {
     use std::os::unix::fs::symlink;
     let dir = Temp::new();
-    std::fs::create_dir(dir.0.join("omamail")).unwrap();
+    std::fs::create_dir(dir.0.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
     let target = dir.0.join("outside");
     std::fs::write(&target, b"sentinel").unwrap();
-    symlink(&target, dir.0.join("omamail/outbox.json")).unwrap();
+    symlink(
+        &target,
+        dir.0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.json"),
+    )
+    .unwrap();
     let outbox = Outbox::with_root(
         Arc::new(|_| Box::pin(async { panic!("unsafe storage must not send") })),
         Some(dir.0.clone()),
@@ -786,7 +806,10 @@ async fn shutdown_marks_wire_inflight_unknown_and_refuses_new_sends() {
     #[cfg(target_os = "linux")]
     let inherited = format!("/proc/{}/fd/{lease_fd}", _child.0);
     #[cfg(target_os = "linux")]
-    let lock_path = dir.0.join("omamail/outbox.lock");
+    let lock_path = dir
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("outbox.lock");
     #[cfg(target_os = "linux")]
     assert_eq!(std::fs::read_link(&inherited).unwrap(), lock_path);
     outbox.shutdown().await.unwrap();
@@ -814,10 +837,14 @@ async fn shutdown_marks_wire_inflight_unknown_and_refuses_new_sends() {
     );
     use std::os::unix::fs::PermissionsExt;
     assert_eq!(
-        std::fs::metadata(dir.0.join("omamail/outbox.json"))
-            .unwrap()
-            .permissions()
-            .mode()
+        std::fs::metadata(
+            dir.0
+                .join(crate::platform::dirs::APP_DIRECTORY)
+                .join("outbox.json")
+        )
+        .unwrap()
+        .permissions()
+        .mode()
             & 0o777,
         0o600
     );
@@ -921,7 +948,12 @@ async fn successful_receipts_are_compact_and_do_not_fill_the_active_queue() {
         duplicate["duplicate"], true,
         "acknowledgement cannot erase no-resend identity"
     );
-    let bytes = std::fs::read_to_string(dir.0.join("omamail/outbox.json")).unwrap();
+    let bytes = std::fs::read_to_string(
+        dir.0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("outbox.json"),
+    )
+    .unwrap();
     assert!(!bytes.contains("old private body"));
     assert!(!bytes.contains("synthetic-private-body"));
 }

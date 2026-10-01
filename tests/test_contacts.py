@@ -46,7 +46,7 @@ with tempfile.TemporaryDirectory() as temporary:
     )
 
     # Also create omamail cache and contacts.json
-    cache_dir = home / ".cache" / "omamail"
+    cache_dir = home / ".cache" / "supaomamail"
     cache_dir.mkdir(parents=True)
     (cache_dir / "account-test.json").write_text(
         json.dumps({
@@ -65,7 +65,7 @@ with tempfile.TemporaryDirectory() as temporary:
         encoding="utf-8"
     )
 
-    config_dir = home / ".config" / "omamail"
+    config_dir = home / ".config" / "supaomamail"
     config_dir.mkdir(parents=True)
     (config_dir / "contacts.json").write_text(
         json.dumps([{"name": "Local Friend", "email": "friend@local.net"}]),

@@ -26,7 +26,7 @@ def main(args):
         return 2
     foreground, accent, _, title, body = args
     cache = Path(os.environ.get('XDG_CACHE_HOME') or Path.home() / '.cache')
-    directory = cache / 'omamail' / 'notification-icons'
+    directory = cache / 'supaomamail' / 'notification-icons'
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     # A new path per palette also prevents image caches retaining the old theme.
     path = directory / (foreground[1:] + '-' + accent[1:] + '.svg')
@@ -50,7 +50,7 @@ def main(args):
     body = escape(body, quote=False)
     actions = (['--action=default=Open event...', '--action=snooze=Snooze', '--action=dismiss=Dismiss']
                if calendar else ['--action=default=Read...'])
-    os.execvp('notify-send', ['notify-send', '-a', 'Omamail', '-i', str(path)]
+    os.execvp('notify-send', ['notify-send', '-a', 'SupaOmaMail', '-i', str(path)]
               + actions + ['--', title, body])
 
 

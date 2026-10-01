@@ -220,7 +220,7 @@ Item {
     // The window `App` measures itself by is the one it draws, not the test
     // root: find it by its title to size it.
     function window() {
-      return having(app, function(it) { return it.title === "Omamail" })
+      return having(app, function(it) { return it.title === "SupaOmaMail" })
     }
 
     function having(item, accept) {

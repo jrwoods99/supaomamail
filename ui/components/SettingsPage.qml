@@ -422,8 +422,8 @@ Column {
 
       Text {
         width: parent.width
-        text: "o.bind(\"SUPER + SHIFT + G\", \"Omamail\", "
-          + "\"omarchy shell shell toggle omamail '\{}'\")"
+        text: "o.bind(\"SUPER + SHIFT + G\", \"SupaOmaMail\", "
+          + "\"omarchy shell shell toggle supaomamail '\{}'\")"
         color: root.dimColor
         font.family: root.panelFontFamily
         font.pixelSize: Style.font.caption
@@ -486,8 +486,8 @@ Column {
       Text {
         width: parent.width
         text: mailClientRow.isDefault
-          ? "Omamail is the default mail client"
-          : "Set up Omamail as the default mail client"
+          ? "SupaOmaMail is the default mail client"
+          : "Set up SupaOmaMail as the default mail client"
         color: root.textColor
         font.family: root.panelFontFamily
         font.pixelSize: Style.font.bodySmall
@@ -528,7 +528,7 @@ Column {
       text: mailClientRow.isDefault ? "Undo" : "Set as default"
       tooltipText: mailClientRow.isDefault
         ? "Give SUPER+SHIFT+E back to Omarchy's own email binding"
-        : "Make Omamail open mailto: links and SUPER+SHIFT+E"
+        : "Make SupaOmaMail open mailto: links and SUPER+SHIFT+E"
       foreground: root.textColor
       fontFamily: root.panelFontFamily
       onClicked: root.service.setDefaultMailClient(!mailClientRow.isDefault)
@@ -906,7 +906,7 @@ Column {
 
       Text {
         width: parent.width
-        text: "Omamail waits before delivery. Press alt+z or select Undo to cancel. Set 0 to send now."
+        text: "SupaOmaMail waits before delivery. Press alt+z or select Undo to cancel. Set 0 to send now."
         color: root.dimColor
         font.family: root.panelFontFamily
         font.pixelSize: Style.font.caption
@@ -1192,7 +1192,7 @@ Column {
     Text {
       width: parent.width
       textFormat: Text.PlainText
-      text: "What this mailbox is called in Omamail — in the switcher, in this "
+      text: "What this mailbox is called in SupaOmaMail — in the switcher, in this "
         + "list, and beside every message in a combined view. Leave it empty "
         + "to use the address. It is not sent to anyone."
       color: root.dimColor

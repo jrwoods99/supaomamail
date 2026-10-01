@@ -232,9 +232,9 @@ def json_contacts(path: Path) -> list[dict[str, str]]:
 def main() -> None:
     home = Path(os.environ.get("HOME", "")).expanduser()
     cache_env = os.environ.get("XDG_CACHE_HOME")
-    cache_dir = (Path(cache_env) if cache_env else (home / ".cache")) / "omamail"
+    cache_dir = (Path(cache_env) if cache_env else (home / ".cache")) / "supaomamail"
     config_env = os.environ.get("XDG_CONFIG_HOME")
-    config_dir = (Path(config_env) if config_env else (home / ".config")) / "omamail"
+    config_dir = (Path(config_env) if config_env else (home / ".config")) / "supaomamail"
     roots = [home / ".thunderbird", home / ".betterbird"]
     contacts: dict[str, dict[str, str]] = {}
 

@@ -141,7 +141,7 @@ fn mail_list_fixture(imap_port: u16, keyring_succeeds: bool) -> MailListFixture 
         std::process::id(),
         MAIL_LIST_FIXTURE.fetch_add(1, Ordering::Relaxed)
     ));
-    let config = config_root(&root).join("omamail");
+    let config = config_root(&root).join(omamail::platform::dirs::APP_DIRECTORY);
     fs::create_dir_all(&config).unwrap();
     fs::write(
         config.join("accounts.json"),
@@ -207,7 +207,12 @@ fn state_root(root: &Path) -> PathBuf {
 
 #[cfg(target_os = "macos")]
 fn assert_no_runtime_storage(root: &Path) {
-    assert!(!root.join("home/Library/Caches/omamail").exists());
+    assert!(
+        !root
+            .join("home/Library/Caches")
+            .join(omamail::platform::dirs::APP_DIRECTORY)
+            .exists()
+    );
 }
 
 #[cfg(not(target_os = "macos"))]
@@ -338,7 +343,9 @@ fn fixture_snapshot(root: &Path) -> FixtureSnapshot {
 #[test]
 fn malformed_provider_action_previews_refuse_without_credentials_or_writes() {
     let fixture = mail_list_fixture(9, true);
-    let registry = config_root(&fixture.0).join("omamail/accounts.json");
+    let registry = config_root(&fixture.0)
+        .join(omamail::platform::dirs::APP_DIRECTORY)
+        .join("accounts.json");
     let mut accounts: Value = serde_json::from_slice(&fs::read(&registry).unwrap()).unwrap();
     accounts["accounts"]
         .as_array_mut()
@@ -462,7 +469,7 @@ async fn malformed_final_imap_action_id_prevents_all_network_and_cache_changes()
 #[test]
 fn configured_list_failures_do_not_repair_registry_metadata() {
     let fixture = mail_list_fixture(9, false);
-    let directory = config_root(&fixture.0).join("omamail");
+    let directory = config_root(&fixture.0).join(omamail::platform::dirs::APP_DIRECTORY);
     let registry = directory.join("accounts.json");
     let before = (
         metadata(&directory),
@@ -499,7 +506,7 @@ fn configured_list_failures_do_not_repair_registry_metadata() {
 #[test]
 fn configured_read_failures_do_not_repair_registry_metadata() {
     let fixture = mail_list_fixture(9, false);
-    let directory = config_root(&fixture.0).join("omamail");
+    let directory = config_root(&fixture.0).join(omamail::platform::dirs::APP_DIRECTORY);
     let registry = directory.join("accounts.json");
     let before = (
         metadata(&directory),
@@ -544,7 +551,7 @@ fn configured_read_failures_do_not_repair_registry_metadata() {
 #[test]
 fn imap_and_outlook_destination_previews_require_readonly_credentials() {
     let fixture = mail_list_fixture(9, false);
-    let directory = config_root(&fixture.0).join("omamail");
+    let directory = config_root(&fixture.0).join(omamail::platform::dirs::APP_DIRECTORY);
     let registry = directory.join("accounts.json");
     let before = (
         metadata(&directory),
@@ -873,7 +880,9 @@ fn task_commands_have_only_the_approved_vocabulary_and_execute_switch() {
 #[test]
 fn root_mutations_preview_exact_intent_and_never_touch_storage_or_credentials() {
     let fixture = mail_list_fixture(9, false);
-    let config = config_root(&fixture.0).join("omamail/accounts.json");
+    let config = config_root(&fixture.0)
+        .join(omamail::platform::dirs::APP_DIRECTORY)
+        .join("accounts.json");
     let before = (metadata(&config), fs::read(&config).unwrap());
     let sentinel = fixture.0.join("credential-touched");
     fs::write(
@@ -1172,7 +1181,9 @@ async fn real_smtp_send(generic: bool, acknowledge: bool, owner: bool, crash: bo
     use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let fixture = mail_list_fixture(9, true);
-    let config = config_root(&fixture.0).join("omamail/accounts.json");
+    let config = config_root(&fixture.0)
+        .join(omamail::platform::dirs::APP_DIRECTORY)
+        .join("accounts.json");
     let mut registry: Value = serde_json::from_slice(&fs::read(&config).unwrap()).unwrap();
     registry["accounts"][1]["imap"]["smtpHost"] = serde_json::json!("127.0.0.1");
     registry["accounts"][1]["imap"]["smtpPort"] =
@@ -1327,7 +1338,12 @@ async fn real_smtp_send(generic: bool, acknowledge: bool, owner: bool, crash: bo
         assert_eq!(value["error"]["code"], "outbox_delivery_unknown");
     }
     let durable: Value = serde_json::from_slice(
-        &fs::read(state_root(&fixture.0).join("omamail/outbox.json")).unwrap(),
+        &fs::read(
+            state_root(&fixture.0)
+                .join(omamail::platform::dirs::APP_DIRECTORY)
+                .join("outbox.json"),
+        )
+        .unwrap(),
     )
     .unwrap();
     assert_eq!(durable.as_array().unwrap().len(), 1);
@@ -1435,7 +1451,9 @@ async fn imap_action_preview_requires_discovered_destinations_and_execution_uses
         for available in [false, true] {
             let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
             let fixture = mail_list_fixture(listener.local_addr().unwrap().port(), true);
-            let config = config_root(&fixture.0).join("omamail/accounts.json");
+            let config = config_root(&fixture.0)
+                .join(omamail::platform::dirs::APP_DIRECTORY)
+                .join("accounts.json");
             let before = (
                 metadata(&config),
                 fs::read(&config).unwrap(),
@@ -1651,7 +1669,9 @@ async fn root_list_and_read_use_active_account_and_safe_provider_results() {
     for read in [false, true] {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let fixture = mail_list_fixture(listener.local_addr().unwrap().port(), true);
-        let config = config_root(&fixture.0).join("omamail/accounts.json");
+        let config = config_root(&fixture.0)
+            .join(omamail::platform::dirs::APP_DIRECTORY)
+            .join("accounts.json");
         let mut registry: Value = serde_json::from_slice(&fs::read(&config).unwrap()).unwrap();
         registry["activeId"] = serde_json::json!("imap:imap@example.org");
         fs::write(&config, registry.to_string()).unwrap();

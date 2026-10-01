@@ -166,7 +166,7 @@ def main():
             path.mkdir(mode=0o700)
             env[key] = str(path)
         env.update(QT_QPA_PLATFORM="offscreen", QT_QUICK_BACKEND="software", QT_QPA_PLATFORMTHEME="")
-        registry = Path(env["XDG_CONFIG_HOME"]) / "omamail/accounts.json"
+        registry = Path(env["XDG_CONFIG_HOME"]) / "supaomamail/accounts.json"
         registry.parent.mkdir()
         source = json.dumps({"version": 1, "accounts": [
             {"email": "local@example.org", "clientSecret": "synthetic-secret"}

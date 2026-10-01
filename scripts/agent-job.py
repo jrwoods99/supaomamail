@@ -174,7 +174,7 @@ def check_id(value):
 
 @contextlib.contextmanager
 def store():
-    base = os.path.join(os.environ.get('XDG_STATE_HOME') or os.path.expanduser('~/.local/state'), 'omamail', 'assistant')
+    base = os.path.join(os.environ.get('XDG_STATE_HOME') or os.path.expanduser('~/.local/state'), 'supaomamail', 'assistant')
     os.makedirs(base, mode=0o700, exist_ok=True)
     fd = os.open(base, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
     try:

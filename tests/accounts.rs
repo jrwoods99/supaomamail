@@ -45,7 +45,7 @@ fn cli_reads_only_bounded_regular_files_without_writing() {
     ] {
         std::fs::create_dir_all(directory).unwrap();
     }
-    let directory = platform_config_root(&root, &home).join("omamail");
+    let directory = platform_config_root(&root, &home).join(omamail::platform::dirs::APP_DIRECTORY);
     std::fs::create_dir_all(&directory).unwrap();
     let path = directory.join("accounts.json");
     let run = || {

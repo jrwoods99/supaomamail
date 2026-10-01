@@ -317,7 +317,7 @@ function usingBuiltin(fileText, accountId) {
 
 function path(home) {
   var base = trimmed(home)
-  return (base || "~") + "/.config/omamail/credentials.json"
+  return (base || "~") + "/.config/supaomamail/credentials.json"
 }
 
 // ----------------------------------------------------------------- keyring
@@ -325,7 +325,7 @@ function path(home) {
 // The refresh token is keyed by account as well as by client, because two
 // accounts may share one client: keyed by client alone, the second sign-in
 // would overwrite the first account's token and silently sign it out.
-var KEYRING_SERVICE = "omamail"
+var KEYRING_SERVICE = "supaomamail"
 var RENAMED_KEYRING_SERVICE = "omarchy-gmail"
 var KEYRING_KIND = "refresh-token"
 // A token stored before Calendar support cannot prove it carries the new
@@ -472,8 +472,8 @@ function refreshTokenAttributes(clientId, accountId, stage) {
 // *stderr*:
 //
 //   stdout                                    stderr
-//   [/12]                                     attribute.service = omamail
-//   label = Omamail refresh token             attribute.kind = refresh-token
+//   [/12]                                     attribute.service = supaomamail
+//   label = SupaOmaMail refresh token             attribute.kind = refresh-token
 //   secret = 1//0the-token                    attribute.client-id = 1234-abc...
 //   created = 2026-08-21 13:01:00             attribute.account = one@gmail.com
 //   schema = org.freedesktop.Secret.Generic

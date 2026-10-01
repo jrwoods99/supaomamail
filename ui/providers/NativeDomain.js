@@ -32,7 +32,7 @@ var FACTS = {
       "inbox:primary": "in:inbox -category:promotions -category:social -category:forums",
       "inbox:primaryUnread": "in:inbox is:unread -category:promotions -category:social -category:forums",
       "sent": "in:sent",
-      "snoozed": "label:omamail-snoozed",
+      "snoozed": "label:supaomamail-snoozed",
       "spam": "in:spam",
       "starred": "is:starred",
       "trash": "in:trash",

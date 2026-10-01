@@ -12,10 +12,10 @@ import "bar/Bridge.js" as BarBridge
 BarWidget {
   id: root
 
-  moduleName: "omamail"
+  moduleName: "supaomamail"
 
   readonly property var directService: bar && bar.shell
-    ? bar.shell.serviceFor("omamail") : null
+    ? bar.shell.serviceFor("supaomamail") : null
   readonly property var gmail: directService
     || (bridgeApi && bridgeState ? bridgedStatus : null)
   property var bridgeApi: null
@@ -42,7 +42,7 @@ BarWidget {
     readonly property bool windowOpen: !!root.bridgeState && root.bridgeState.windowOpen
     readonly property bool showBarIcon: !root.bridgeState || root.bridgeState.showBarIcon
     readonly property int unreadTotal: root.bridgeState ? root.bridgeState.unreadTotal : 0
-    readonly property string barTooltip: root.bridgeState ? root.bridgeState.barTooltip : "Omamail"
+    readonly property string barTooltip: root.bridgeState ? root.bridgeState.barTooltip : "SupaOmaMail"
     readonly property string contentDirection: root.bridgeState ? root.bridgeState.contentDirection : ""
     readonly property var barMessages: root.bridgeState ? root.bridgeState.barMessages : []
     readonly property var barEvents: root.bridgeState ? root.bridgeState.barEvents : []
@@ -103,16 +103,16 @@ BarWidget {
   function openWindow() {
     close()
     if (!bar || !bar.shell) return
-    if (typeof bar.shell.toggle === "function") bar.shell.toggle("omamail", "{}")
-    else if (typeof bar.shell.summon === "function") bar.shell.summon("omamail", "{}")
+    if (typeof bar.shell.toggle === "function") bar.shell.toggle("supaomamail", "{}")
+    else if (typeof bar.shell.summon === "function") bar.shell.summon("supaomamail", "{}")
   }
 
   function openMessage(accountId, messageId) {
     close()
     if (!bar || !bar.shell) return
     var payload = JSON.stringify({ accountId: accountId, messageId: messageId })
-    if (typeof bar.shell.summon === "function") bar.shell.summon("omamail", payload)
-    else if (typeof bar.shell.toggle === "function") bar.shell.toggle("omamail", payload)
+    if (typeof bar.shell.summon === "function") bar.shell.summon("supaomamail", payload)
+    else if (typeof bar.shell.toggle === "function") bar.shell.toggle("supaomamail", payload)
   }
 
   function openEvent(eventData) {
@@ -123,8 +123,8 @@ BarWidget {
       view: "calendar", eventId: String(event.uid || ""),
       eventStart: event.start ? Number(event.start.ms) : 0
     })
-    if (typeof bar.shell.summon === "function") bar.shell.summon("omamail", payload)
-    else if (typeof bar.shell.toggle === "function") bar.shell.toggle("omamail", payload)
+    if (typeof bar.shell.summon === "function") bar.shell.summon("supaomamail", payload)
+    else if (typeof bar.shell.toggle === "function") bar.shell.toggle("supaomamail", payload)
   }
 
   // Whether this draws anything. The widget itself stays: it is the only thing
@@ -146,7 +146,7 @@ BarWidget {
     visible: root.drawsIcon
     anchors.fill: parent
     bar: root.bar
-    tooltipText: root.gmail ? root.gmail.barTooltip : "Omamail"
+    tooltipText: root.gmail ? root.gmail.barTooltip : "SupaOmaMail"
 
     // Read from inside `iconComponent`. Both BarIconButton and GmailIcon name
     // their own root object `root`, so nothing inside a Component declared

@@ -38,13 +38,13 @@ QtObject {
   }
 
   function summon(pluginId, payload) {
-    if (String(pluginId || "") !== String(manifest.id || "omamail") || !app) return false
+    if (String(pluginId || "") !== String(manifest.id || "supaomamail") || !app) return false
     app.open(String(payload || "{}"))
     return true
   }
 
   function hide(pluginId) {
-    if (String(pluginId || "") !== String(manifest.id || "omamail")) return false
+    if (String(pluginId || "") !== String(manifest.id || "supaomamail")) return false
     if (app && typeof app.close === "function") app.close()
     // With no tray, no actionable notification and no Dock to click there is
     // no route back to a hidden window. End the process so a launcher

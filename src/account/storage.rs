@@ -20,7 +20,9 @@ pub(crate) fn raw_registry() -> Result<Value> {
     Ok(call("accounts.read", &json!({}))?["registry"].clone())
 }
 pub(crate) fn raw_registry_readonly() -> Result<Value> {
-    let Some(dir) = crate::cache::directories_readonly(&home()?, &["omamail"])? else {
+    let Some(dir) =
+        crate::cache::directories_readonly(&home()?, &[crate::platform::dirs::APP_DIRECTORY])?
+    else {
         return registry(&[]);
     };
     registry(&read_readonly(&dir)?)
@@ -85,7 +87,9 @@ fn call_at(root: &std::path::Path, method: &str, params: &Value) -> Result<Value
     } else {
         Vec::new()
     };
-    let Some(dir) = crate::cache::directories(root, &["omamail"], writing)? else {
+    let Some(dir) =
+        crate::cache::directories(root, &[crate::platform::dirs::APP_DIRECTORY], writing)?
+    else {
         return Ok(json!({"registry":registry(&[])?,"revision":revision(&[])}));
     };
     // The lock inode remains stable while accounts.json is atomically replaced.
@@ -205,12 +209,17 @@ mod tests {
             if link_name == "omamail" {
                 std::fs::create_dir(&outside).unwrap();
                 std::fs::write(outside.join("sentinel"), b"secret").unwrap();
-                symlink(&outside, root.join("omamail")).unwrap();
+                symlink(&outside, root.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
             } else {
-                std::fs::create_dir(root.join("omamail")).unwrap();
+                std::fs::create_dir(root.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
                 std::fs::write(&outside, b"secret").unwrap();
                 std::fs::set_permissions(&outside, std::fs::Permissions::from_mode(0o644)).unwrap();
-                symlink(&outside, root.join("omamail").join(link_name)).unwrap();
+                symlink(
+                    &outside,
+                    root.join(crate::platform::dirs::APP_DIRECTORY)
+                        .join(link_name),
+                )
+                .unwrap();
             }
             let result = call_at(
                 &root,

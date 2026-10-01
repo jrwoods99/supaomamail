@@ -103,7 +103,7 @@ fn metadata_state(path: &std::path::Path) -> MetadataState {
 }
 
 fn registry_state(fixture: &AccountFixture) -> RegistryState {
-    let directory = fixture.config.join("omamail");
+    let directory = fixture.config.join(crate::platform::dirs::APP_DIRECTORY);
     let registry = directory.join("accounts.json");
     RegistryState {
         directory: metadata_state(&directory),

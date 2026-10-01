@@ -32,7 +32,7 @@ class RuntimeTests(unittest.TestCase):
         spec.loader.exec_module(self.manager)
         (self.root / "backend-version").write_text("0.8.2\n")
         (self.root / "backend-api.json").write_text('{"apiVersion": 1, "releasedApiVersion": 1, "unreleased": {"methods": [], "cases": []}}')
-        self.data = Path(self.tmp.name).resolve() / "data/omamail"
+        self.data = Path(self.tmp.name).resolve() / "data/supaomamail"
         self.home = Path(self.tmp.name).resolve() / "home"
         self.binary = self.data / "bin/omamail"
         patch.object(self.manager, "DATA_ROOT", self.data).start()
@@ -55,13 +55,13 @@ class RuntimeTests(unittest.TestCase):
         manager = importlib.util.module_from_spec(spec)
         with patch.dict(os.environ, {"XDG_DATA_HOME": str(data)}, clear=True):
             spec.loader.exec_module(manager)
-        self.assertEqual(manager.BINARY, data / "omamail/bin/omamail")
+        self.assertEqual(manager.BINARY, data / "supaomamail/bin/omamail")
         self.assertFalse(manager.BINARY.is_relative_to(manager.ROOT))
         spec = importlib.util.spec_from_file_location("home_runtime_manager", target)
         manager = importlib.util.module_from_spec(spec)
         with patch.dict(os.environ, {}, clear=True), patch.object(Path, "home", return_value=home):
             spec.loader.exec_module(manager)
-        self.assertEqual(manager.BINARY, home / ".local/share/omamail/bin/omamail")
+        self.assertEqual(manager.BINARY, home / ".local/share/supaomamail/bin/omamail")
 
     def old(self):
         self.binary.parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +81,7 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(self.manager.run("enable-cli")["state"], "ready")
         self.assertEqual(self.plugin_tree(), before)
         self.assertTrue(self.binary.is_file())
-        self.assertEqual(os.readlink(self.home / ".local/bin/omamail"), str(self.binary))
+        self.assertEqual(os.readlink(self.home / ".local/bin/supaomamail"), str(self.binary))
 
     def test_install_local_checks_version_and_preserves_old_runtime_on_failure(self):
         source = self.root / "target/release/omamail"
@@ -487,7 +487,7 @@ touch linked
     def test_cli_link_never_replaces_unrelated_file(self):
         self.release(self.archive())
         self.assertEqual(self.manager.run("install")["state"], "ready")
-        link = self.home / ".local/bin/omamail"
+        link = self.home / ".local/bin/supaomamail"
         link.parent.mkdir(parents=True)
         with patch.object(self.manager.Path, "home", return_value=self.home):
             link.write_text("unrelated")
@@ -509,7 +509,7 @@ touch linked
         legacy = self.root / "runtime/bin/omamail"
         legacy.parent.mkdir(parents=True)
         legacy.write_text("old plugin-owned runtime")
-        link = self.home / ".local/bin/omamail"
+        link = self.home / ".local/bin/supaomamail"
         link.parent.mkdir(parents=True)
         link.symlink_to(legacy)
         with patch.object(self.manager.Path, "home", return_value=self.home):
@@ -528,10 +528,10 @@ touch linked
         legacy.chmod(0o700)
         (previous / "manifest.json").write_text(json.dumps({
             "schemaVersion": 1,
-            "id": "omamail",
+            "id": "supaomamail",
             "description": "x" * 2048,
         }))
-        link = self.home / ".local/bin/omamail"
+        link = self.home / ".local/bin/supaomamail"
         link.parent.mkdir(parents=True)
         link.symlink_to(legacy)
         result = self.manager.run("enable-cli")
@@ -543,7 +543,7 @@ touch linked
         self.release(self.archive())
         self.assertEqual(self.manager.run("install")["state"], "ready")
         legacy = self.root / "runtime/bin/omamail"
-        link = self.home / ".local/bin/omamail"
+        link = self.home / ".local/bin/supaomamail"
         link.parent.mkdir(parents=True)
         link.symlink_to(legacy)
         with patch.object(self.manager.os, "replace", side_effect=OSError("synthetic failure")):
@@ -553,7 +553,7 @@ touch linked
     def test_cli_status_requires_exact_owned_link_and_valid_private_runtime(self):
         self.release(self.archive())
         self.assertFalse(self.manager.run("install")["cliInstalled"])
-        link = self.home / ".local/bin/omamail"
+        link = self.home / ".local/bin/supaomamail"
         link.parent.mkdir(parents=True)
         foreign = self.root / "foreign"
         foreign.write_text("#!/bin/sh\ntouch " + str(self.root / "executed") + "\n")

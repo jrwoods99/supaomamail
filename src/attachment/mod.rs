@@ -343,7 +343,9 @@ mod tests {
 pub fn forget(params: &Value) -> Result<Value, &'static str> {
     let base = crate::platform::dirs::AppDirs::discover()?.cache;
     forget_in(
-        &base.join("omamail/compose"),
+        &base
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("compose"),
         params["path"].as_str().ok_or("invalid_params")?,
     )
 }
@@ -446,7 +448,11 @@ pub fn store(params: &Value, bytes: &[u8]) -> Result<Value, &'static str> {
     }
     let dirs = crate::platform::dirs::AppDirs::discover()?;
     let directory = if opening {
-        crate::platform::private_fs::directories(&dirs.runtime, &["omamail", "attachments"], true)
+        crate::platform::private_fs::directories(
+            &dirs.runtime,
+            &[crate::platform::dirs::APP_DIRECTORY, "attachments"],
+            true,
+        )
     } else {
         crate::platform::private_fs::directories(&dirs.downloads, &[], true)
     }

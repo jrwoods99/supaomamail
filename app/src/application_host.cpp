@@ -203,7 +203,7 @@ QString backendStorageRoot(bool cache)
     QString root = QString::fromLocal8Bit(qgetenv(cache ? "LOCALAPPDATA" : "APPDATA"));
     if (root.isEmpty()) root = QStandardPaths::writableLocation(
         cache ? QStandardPaths::CacheLocation : QStandardPaths::AppConfigLocation);
-    if (cache) root = QDir(root).filePath(QStringLiteral("OmamailData/Cache"));
+    if (cache) root = QDir(root).filePath(QStringLiteral("SupaOmaMailData/Cache"));
 #elif defined(Q_OS_MACOS)
     const QString home = QDir::homePath();
     QString root = QDir(home).filePath(cache ? QStringLiteral("Library/Caches")
@@ -216,7 +216,7 @@ QString backendStorageRoot(bool cache)
 #endif
     if (!QDir::isAbsolutePath(root)
         || QDir::fromNativeSeparators(root).split('/').contains(QStringLiteral(".."))) return {};
-    return QDir(QDir::cleanPath(root)).filePath(QStringLiteral("omamail"));
+    return QDir(QDir::cleanPath(root)).filePath(QStringLiteral("supaomamail"));
 }
 
 QString applicationPath(bool cache, const QString &name)

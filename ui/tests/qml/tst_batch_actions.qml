@@ -166,7 +166,7 @@ Item {
       account.selectedMessage = account.messages[0]
       app.open()
       app.pushEntry("reader", { id: account.selectedId })
-      var window = having(app, function(item) { return item.title === "Omamail" })
+      var window = having(app, function(item) { return item.title === "SupaOmaMail" })
       var reader = having(app, function(item) { return item.forceRichAnyway !== undefined })
       verify(window !== null && reader !== null)
       window.width = 980
@@ -313,7 +313,7 @@ Item {
       account.selectedId = data.outside ? "3:INBOX" : "1:INBOX"
       account.selectedMessage = messages[data.outside ? 2 : 0]
       app.open()
-      var window = having(app, function(item) { return item.title === "Omamail" })
+      var window = having(app, function(item) { return item.title === "SupaOmaMail" })
       verify(window !== null)
       window.width = data.compact ? 600 : 980
       app.pushEntry("reader", { id: account.selectedId })

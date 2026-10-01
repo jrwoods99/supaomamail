@@ -45,7 +45,7 @@ pub(super) fn normalize(method: &str, answer: Value) -> Value {
             // The app's own labels (the Snoozed one) are machinery, not
             // somewhere a person files mail: the rail, the move picker and the
             // label tree leave them out the way they leave out Gmail's own.
-            let own = raw.starts_with("Omamail/");
+            let own = raw.starts_with("SupaOmaMail/");
             Some(json!({"id":id,"name":display(id,raw),"rawName":raw,"system":own||text(&label["type"])=="system",
                 "unread":count(&label["messagesUnread"]),"total":count(&label["messagesTotal"]),"threadsUnread":count(&label["threadsUnread"])}))
         }).collect()),
@@ -89,9 +89,9 @@ mod tests {
         let labels = normalize(
             "gmail.labels",
             json!({"labels":[
-                {"id":"Label_40","name":"Omamail/Snoozed","type":"user"},
-                {"id":"Label_41","name":"Omamail","type":"user"},
-                {"id":"Label_42","name":"Projects/Omamail/Notes","type":"user"}
+                {"id":"Label_40","name":"SupaOmaMail/Snoozed","type":"user"},
+                {"id":"Label_41","name":"SupaOmaMail","type":"user"},
+                {"id":"Label_42","name":"Projects/SupaOmaMail/Notes","type":"user"}
             ]}),
         );
         assert_eq!(labels[0]["system"], true);
@@ -102,7 +102,7 @@ mod tests {
         );
         assert_eq!(
             labels[1]["system"], false,
-            "a label a person named Omamail is theirs"
+            "a label a person named SupaOmaMail is theirs"
         );
         assert_eq!(labels[2]["system"], false);
     }

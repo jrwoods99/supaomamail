@@ -285,7 +285,10 @@ mod tests {
             fixture.root.join("downloads"),
         )
         .unwrap();
-        assert_eq!(dirs.config_directory(), fixture.config.join("omamail"));
+        assert_eq!(
+            dirs.config_directory(),
+            fixture.config.join(crate::platform::dirs::APP_DIRECTORY)
+        );
         let _override =
             crate::platform::dirs::install_test_override(dirs, fixture.root.join("different-home"))
                 .unwrap();

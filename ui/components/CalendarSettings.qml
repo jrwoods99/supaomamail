@@ -819,7 +819,7 @@ Column {
     SectionHeading { text: "REMINDERS"; bottomPadding: Style.space(2) }
     SettingRow {
       title: "Desktop reminders"
-      detail: "Shown while Omamail is running, even with its window closed. Google calendars only."
+      detail: "Shown while SupaOmaMail is running, even with its window closed. Google calendars only."
       ToggleSwitch {
         objectName: "calendar-reminders-enabled"
         checked: !!root.service && root.service.calendarRemindersEnabled === true

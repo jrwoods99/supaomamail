@@ -235,7 +235,9 @@ fn cached_reader_redecodes_original_octets_instead_of_reusing_mojibake() {
     }
     let _cleanup = Cleanup(root.clone());
     let config = config_root(&root);
-    let registry = config.join("omamail/accounts.json");
+    let registry = config
+        .join(omamail::platform::dirs::APP_DIRECTORY)
+        .join("accounts.json");
     fs::create_dir_all(registry.parent().unwrap()).unwrap();
     fs::set_permissions(&config, fs::Permissions::from_mode(0o700)).unwrap();
     fs::set_permissions(

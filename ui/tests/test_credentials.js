@@ -87,7 +87,7 @@ assert.strictEqual(credentials.isConfigured(null), false)
 assert.strictEqual(credentials.describe(parsed.credentials), "omarchy-gmail-42 · 1234")
 assert.strictEqual(credentials.describe(credentials.empty()), "")
 assert.strictEqual(
-  credentials.path("/home/jason"), "/home/jason/.config/omamail/credentials.json")
+  credentials.path("/home/jason"), "/home/jason/.config/supaomamail/credentials.json")
 
 // -------------------------------------------------------- built-in client
 //
@@ -133,7 +133,7 @@ const first = credentials.keyringAttributes(sharedClient, "one@gmail.com")
 const second = credentials.keyringAttributes(sharedClient, "two@gmail.com")
 
 deepEqual(first, [
-  "service", "omamail",
+  "service", "supaomamail",
   "kind", "refresh-token",
   "client-id", sharedClient,
   "account", "one@gmail.com",
@@ -169,7 +169,7 @@ assert.strictEqual(credentials.keyringAttributes(sharedClient, "").indexOf("defa
   "an account with no name yet still gets a literal account attribute")
 
 deepEqual(credentials.previousGrantKeyringAttributes(sharedClient, "one@gmail.com"), [
-  "service", "omamail",
+  "service", "supaomamail",
   "kind", "refresh-token",
   "client-id", sharedClient,
   "account", "one@gmail.com"
@@ -183,7 +183,7 @@ deepEqual(credentials.legacyKeyringAttributes(""), [])
 // The old single-account entries carry no account or grant attribute. The
 // upgrade detects them separately and asks Google for Calendar permission.
 deepEqual(credentials.legacyKeyringAttributes(sharedClient), [
-  "service", "omamail",
+  "service", "supaomamail",
   "kind", "refresh-token",
   "client-id", sharedClient
 ])
@@ -191,7 +191,7 @@ assert.strictEqual(credentials.legacyKeyringAttributes(sharedClient).indexOf("ac
 
 deepEqual(credentials.outlookKeyringAttributes(
   "12345678-1234-4abc-9def-1234567890ab", "outlook:one@hotmail.com"), [
-  "service", "omamail",
+  "service", "supaomamail",
   "kind", "outlook-refresh-token",
   "client-id", "12345678-1234-4abc-9def-1234567890ab",
   "account", "outlook:one@hotmail.com"
@@ -231,7 +231,7 @@ deepEqual(credentials.refreshTokenAttributes(sharedClient, "me@example.com", 4),
 // three entries rather than one overwriting the other two.
 
 deepEqual(credentials.jmapKeyringAttributes("jmap:ada@example.org"), [
-  "service", "omamail",
+  "service", "supaomamail",
   "kind", "jmap-secret",
   "account", "jmap:ada@example.org"
 ])
@@ -248,7 +248,7 @@ assert.notDeepStrictEqual(
 // attribute value is a wildcard to secret-tool, and this lookup would hand
 // back some other mailbox's secret.
 deepEqual(credentials.jmapKeyringAttributes(""), [
-  "service", "omamail",
+  "service", "supaomamail",
   "kind", "jmap-secret",
   "account", "default"
 ])
@@ -268,7 +268,7 @@ function recordLines(count) {
   var lines = []
   for (var i = 0; i < count; i++) {
     lines.push("[/" + (i + 10) + "]")
-    lines.push("label = Omamail refresh token")
+    lines.push("label = SupaOmaMail refresh token")
     lines.push("secret = token-" + i)
     lines.push("created = 2026-08-21 13:01:00")
     lines.push("modified = 2026-08-21 13:01:00")
@@ -280,7 +280,7 @@ function recordLines(count) {
 function attributeLines(accounts) {
   var lines = []
   for (var i = 0; i < accounts.length; i++) {
-    lines.push("attribute.service = omamail")
+    lines.push("attribute.service = supaomamail")
     lines.push("attribute.kind = refresh-token")
     lines.push("attribute.client-id = " + sharedClient)
     if (accounts[i] !== null) lines.push("attribute.account = " + accounts[i])

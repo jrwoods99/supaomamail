@@ -1,13 +1,15 @@
-//! Platform data roots. Consumers append their existing `omamail` subdirectory,
-//! retaining Linux plugin layouts. Discovery never creates or writes directories.
+//! Platform data roots. Consumers append the app's own subdirectory,
+//! `APP_DIRECTORY`, retaining Linux plugin layouts. Discovery never creates or
+//! writes directories.
 use std::{
     ffi::OsString,
     path::{Component, Path, PathBuf},
 };
 
 /// Shared backend/standalone-host contract: every application-owned directory
-/// is this single component below its platform-native root.
-pub const APP_DIRECTORY: &str = "omamail";
+/// is this single component below its platform-native root. SupaOmaMail's own,
+/// so it keeps its data apart from an Omamail installed beside it.
+pub const APP_DIRECTORY: &str = "supaomamail";
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct AppDirs {
@@ -102,9 +104,9 @@ impl AppDirs {
             // outside that replaceable installation directory.
             Self::from_roots(
                 known_folder(&FOLDERID_RoamingAppData)?,
-                local.join("OmamailData/Cache"),
-                local.join("OmamailData/State"),
-                local.join("OmamailData/Runtime"),
+                local.join("SupaOmaMailData/Cache"),
+                local.join("SupaOmaMailData/State"),
+                local.join("SupaOmaMailData/Runtime"),
                 known_folder(&FOLDERID_Downloads)?,
             )
         }
@@ -384,8 +386,8 @@ mod windows_tests {
         let local = known_folder(&FOLDERID_LocalAppData).unwrap();
         for root in [&dirs.cache, &dirs.state, &dirs.runtime] {
             assert!(root.is_absolute());
-            assert!(root.starts_with(local.join("OmamailData")));
-            assert!(!root.starts_with(local.join("omamail")));
+            assert!(root.starts_with(local.join("SupaOmaMailData")));
+            assert!(!root.starts_with(local.join(APP_DIRECTORY)));
         }
     }
 }

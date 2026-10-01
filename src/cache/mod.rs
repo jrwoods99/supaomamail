@@ -114,7 +114,11 @@ pub(crate) use crate::platform::private_fs::{
 };
 
 fn directory(root: &Path, account: &str, create: bool) -> Result<Option<File>> {
-    directories(root, &["omamail", "bodies", account], create)
+    directories(
+        root,
+        &[crate::platform::dirs::APP_DIRECTORY, "bodies", account],
+        create,
+    )
 }
 
 fn js_string(value: &Value) -> String {
@@ -185,7 +189,11 @@ fn call_at(root: &Path, method: &str, params: &Value) -> Result<Value> {
         // Validate both disposable stores before deleting any account data.
         let mut stores = Vec::new();
         for kind in ["bodies", "resources"] {
-            if let Some(dir) = directories(root, &["omamail", kind, &account], false)? {
+            if let Some(dir) = directories(
+                root,
+                &[crate::platform::dirs::APP_DIRECTORY, kind, &account],
+                false,
+            )? {
                 let files = entries(&dir)?;
                 stores.push((dir, files));
             }

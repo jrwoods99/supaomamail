@@ -43,7 +43,7 @@ Column {
           ? "Bundled backend " + root.runtime.installedVersion + " is ready."
           : "Backend " + root.runtime.installedVersion + " is installed.")
         : root.runtime.bundled ? "The bundled mail backend could not start."
-        : "Omamail needs backend " + (root.runtime.requiredVersion || "matching this plugin")
+        : "SupaOmaMail needs backend " + (root.runtime.requiredVersion || "matching this plugin")
           + (root.runtime.installedVersion ? ". Installed: " + root.runtime.installedVersion : ". It is not installed yet.")
       color: root.dimColor
       font.family: root.panelFontFamily
@@ -148,8 +148,8 @@ Column {
       visible: installCli.visible
       wrapMode: Text.WordWrap
       text: root.runtime && root.runtime.cliInstalled
-        ? "omamail is linked in ~/.local/bin. Remove CLI deletes only this link; the mail backend stays installed."
-        : "Optional. Links the installed backend to ~/.local/bin/omamail on your PATH for use in the terminal."
+        ? "supaomamail is linked in ~/.local/bin. Remove CLI deletes only this link; the mail backend stays installed."
+        : "Optional. Links the installed backend to ~/.local/bin/supaomamail on your PATH for use in the terminal."
       color: root.dimColor
       font.family: root.panelFontFamily
       font.pixelSize: Style.font.bodySmall

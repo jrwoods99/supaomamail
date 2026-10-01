@@ -119,7 +119,7 @@ Item {
   readonly property var calendarReminderInbox: calendarReminderLoader.item ? calendarReminderLoader.item.inbox : null
 
   readonly property string pluginId: manifest && manifest.id
-    ? String(manifest.id) : "omamail"
+    ? String(manifest.id) : "supaomamail"
   // Modern Omarchy strips private manifest metadata for third-party plugins.
   // Helpers live at the plugin root, one level above the UI components.
   readonly property string pluginDir: decodeURIComponent(String(Qt.resolvedUrl(".."))
@@ -130,7 +130,7 @@ Item {
   // constructs the service with a stub manifest, and an empty version makes the
   // interface say nothing rather than guess a number.
   readonly property string pluginName: manifest && manifest.name
-    ? String(manifest.name) : "Omamail"
+    ? String(manifest.name) : "SupaOmaMail"
   readonly property string version: manifest && manifest.version
     ? String(manifest.version) : ""
 
@@ -445,14 +445,14 @@ Item {
     if (platform && typeof platform.configPath === "function")
       return String(platform.configPath(String(name || "")) || "")
     var home = Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")
-    return home + "/omamail/" + String(name || "")
+    return home + "/supaomamail/" + String(name || "")
   }
 
   function cachePath(name) {
     if (platform && typeof platform.cachePath === "function")
       return String(platform.cachePath(String(name || "")) || "")
     var home = Quickshell.env("XDG_CACHE_HOME") || (Quickshell.env("HOME") + "/.cache")
-    return home + "/omamail/" + String(name || "")
+    return home + "/supaomamail/" + String(name || "")
   }
 
   function writeConfig(name, text, callback) {
@@ -801,7 +801,7 @@ Item {
   function openNotification(accountId, messageId) {
     if (!Accounts.find(accountList, accountId) || !messageId) return false
     if (shell && typeof shell.summon === "function")
-      return shell.summon("omamail", JSON.stringify({ accountId: accountId, messageId: messageId }))
+      return shell.summon(root.pluginId, JSON.stringify({ accountId: accountId, messageId: messageId }))
     return false
   }
 
@@ -1364,13 +1364,13 @@ Item {
   // The bar answers for all of them: a badge that counted only the mailbox you
   // happen to be looking at would be worse than none.
   readonly property string barTooltip: {
-    if (!ready) return "Omamail · Not connected"
+    if (!ready) return root.pluginName + " · Not connected"
     var suffix = unreadTotal === 0 ? "No unread mail"
       : (unreadTotal === 1 ? "1 unread message" : unreadTotal + " unread messages")
     // The address, whatever the number of mailboxes. How many are configured is
     // not something a tooltip on a mail icon is asked, and the count it used to
     // give was of mailboxes rather than of anything waiting in them.
-    return (accountEmail !== "" ? accountEmail : "Omamail") + " · " + suffix
+    return (accountEmail !== "" ? accountEmail : root.pluginName) + " · " + suffix
   }
 
   // The switcher's model: every mailbox, its count, and why it is not usable.
@@ -2514,7 +2514,7 @@ Item {
   // Not forwarded to an account: the project exists whether or not anyone has
   // signed in, and the menu offers it on the setup page too.
   function openProjectPage() {
-    openExternal("https://github.com/huacnlee/omamail")
+    openExternal("https://github.com/jrwoods99/supaomamail")
   }
 
   function openAuthorPage() {

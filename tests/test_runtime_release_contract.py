@@ -49,7 +49,7 @@ class RuntimeReleaseContract(unittest.TestCase):
                 self.assertLessEqual(len(result), limit)
                 return result
 
-            data = root / "data/omamail"
+            data = root / "data/supaomamail"
             installed = data / "bin/omamail"
             with patch.object(runtime, "ROOT", root), patch.object(runtime, "DATA_ROOT", data), \
                     patch.object(runtime, "BINARY", installed), \

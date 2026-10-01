@@ -158,17 +158,17 @@ void SettingsTest::applicationPathsMatchBackendRoots()
     const QByteArray oldAppData = qgetenv("APPDATA");
     qputenv("APPDATA", "C:/Users/fixture/AppData/Roaming");
     QCOMPARE(QDir::fromNativeSeparators(host.configPath(QStringLiteral("settings.json"))),
-             QStringLiteral("C:/Users/fixture/AppData/Roaming/omamail/settings.json"));
+             QStringLiteral("C:/Users/fixture/AppData/Roaming/supaomamail/settings.json"));
     qputenv("APPDATA", oldAppData);
 #elif defined(Q_OS_MACOS)
     QCOMPARE(host.configPath(QStringLiteral("settings.json")),
              QDir(QDir::homePath()).filePath(
-                 QStringLiteral("Library/Application Support/omamail/settings.json")));
+                 QStringLiteral("Library/Application Support/supaomamail/settings.json")));
 #else
     const QByteArray oldConfigHome = qgetenv("XDG_CONFIG_HOME");
     qputenv("XDG_CONFIG_HOME", "/tmp/omamail-xdg-config");
     QCOMPARE(host.configPath(QStringLiteral("settings.json")),
-             QStringLiteral("/tmp/omamail-xdg-config/omamail/settings.json"));
+             QStringLiteral("/tmp/omamail-xdg-config/supaomamail/settings.json"));
     qputenv("XDG_CONFIG_HOME", oldConfigHome);
 #endif
 }

@@ -231,7 +231,7 @@ for (const api of [5, 6]) {
   const gmail = provider.mailboxes("gmail", [], api).map(box => box.key)
   assert.strictEqual(gmail.indexOf("snoozed"), api >= 6 ? gmail.length - 1 : -1, "api " + api)
 }
-assert.strictEqual(provider.mailboxFor("gmail", "snoozed").query, "label:omamail-snoozed",
+assert.strictEqual(provider.mailboxFor("gmail", "snoozed").query, "label:supaomamail-snoozed",
   "the label the backend files a snoozed message under, as Gmail searches for it")
 for (const id of ["hey", "outlook", "imap", "jmap"]) {
   assert.strictEqual(provider.hasMailbox(id, "snoozed"), false, id)

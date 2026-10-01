@@ -14,7 +14,9 @@ impl Temp {
         Self(root)
     }
     fn account(&self) -> PathBuf {
-        self.0.join("omamail/bodies/account-you_40example.org")
+        self.0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("bodies/account-you_40example.org")
     }
     fn call(&self, method: &str, extra: Value) -> Result<Value> {
         let mut params = json!({"accountId":"you@example.org", "id":"message"});
@@ -205,7 +207,7 @@ fn controls_and_invalid_params_produce_no_cache_directory() {
         temp.call("cache.bodyPut", json!({"id":"A".repeat(100),"body":{}})),
         Err("cache_invalid_input")
     );
-    assert!(!temp.0.join("omamail").exists());
+    assert!(!temp.0.join(crate::platform::dirs::APP_DIRECTORY).exists());
 }
 
 #[test]
@@ -257,9 +259,13 @@ fn symlinked_directory_at_every_layer_never_reads_writes_or_clears_target() {
         let root = temp.0.join("cache");
         let link = match layer {
             "root" => root.clone(),
-            "omamail" => root.join("omamail"),
-            "bodies" => root.join("omamail/bodies"),
-            _ => root.join("omamail/bodies/account-you_40example.org"),
+            "omamail" => root.join(crate::platform::dirs::APP_DIRECTORY),
+            "bodies" => root
+                .join(crate::platform::dirs::APP_DIRECTORY)
+                .join("bodies"),
+            _ => root
+                .join(crate::platform::dirs::APP_DIRECTORY)
+                .join("bodies/account-you_40example.org"),
         };
         std::fs::create_dir_all(link.parent().unwrap()).unwrap();
         symlink(&outside, &link).unwrap();
@@ -307,7 +313,10 @@ fn account_store_roundtrip_bounds_and_legacy_compatibility() {
     assert_eq!(got["queries"]["14|25"]["nextPageToken"], "");
     assert_eq!(got["queries"]["14|25"]["summaries"][0]["unread"], false);
     assert_eq!(got["session"], store["session"]);
-    let path = temp.0.join("omamail/account-you_40example.org.json");
+    let path = temp
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("account-you_40example.org.json");
     assert_eq!(
         std::fs::metadata(&path).unwrap().permissions().mode() & 0o777,
         0o600
@@ -323,10 +332,13 @@ fn account_store_roundtrip_bounds_and_legacy_compatibility() {
 fn account_store_links_never_read_or_overwrite_outside_target() {
     for hardlink in [false, true] {
         let temp = Temp::new();
-        std::fs::create_dir(temp.0.join("omamail")).unwrap();
+        std::fs::create_dir(temp.0.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
         let outside = temp.0.join("outside");
         std::fs::write(&outside, b"sentinel").unwrap();
-        let path = temp.0.join("omamail/account-you_40example.org.json");
+        let path = temp
+            .0
+            .join(crate::platform::dirs::APP_DIRECTORY)
+            .join("account-you_40example.org.json");
         if hardlink {
             std::fs::hard_link(&outside, &path).unwrap();
         } else {
@@ -339,7 +351,9 @@ fn account_store_links_never_read_or_overwrite_outside_target() {
             );
             assert_eq!(std::fs::read(&outside).unwrap(), b"sentinel");
             assert_eq!(
-                std::fs::read_dir(temp.0.join("omamail")).unwrap().count(),
+                std::fs::read_dir(temp.0.join(crate::platform::dirs::APP_DIRECTORY))
+                    .unwrap()
+                    .count(),
                 1
             );
         }
@@ -386,7 +400,10 @@ fn store_oversize_and_directory_links_leave_existing_bytes_untouched() {
         json!({"store":{"version":2,"account":"original"}}),
     )
     .unwrap();
-    let path = temp.0.join("omamail/account-you_40example.org.json");
+    let path = temp
+        .0
+        .join(crate::platform::dirs::APP_DIRECTORY)
+        .join("account-you_40example.org.json");
     let before = std::fs::read(&path).unwrap();
     assert_eq!(
         temp.call(
@@ -440,7 +457,9 @@ fn calendar_cache_preserves_resources_and_refuses_arbitrary_paths() {
         Err("cache_invalid_input")
     );
     assert_eq!(
-        std::fs::read_dir(temp.0.join("omamail")).unwrap().count(),
+        std::fs::read_dir(temp.0.join(crate::platform::dirs::APP_DIRECTORY))
+            .unwrap()
+            .count(),
         1
     );
     assert_eq!(

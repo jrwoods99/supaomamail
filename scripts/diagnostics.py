@@ -178,7 +178,7 @@ def storage():
     with contextlib.ExitStack() as stack:
         fd = os.open(base, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         stack.callback(os.close, fd)
-        for name in ['omamail', 'diagnostics']:
+        for name in ['supaomamail', 'diagnostics']:
             try:
                 os.mkdir(name, 0o700, dir_fd=fd)
             except FileExistsError:
@@ -198,7 +198,7 @@ def storage():
                 if time.monotonic() >= deadline:
                     raise ValueError('Diagnostic storage busy')
                 time.sleep(.02)
-        yield fd, base / 'omamail/diagnostics'
+        yield fd, base / 'supaomamail/diagnostics'
 
 
 def read(fd, name):
@@ -256,14 +256,14 @@ def main(mode):
             return
         # No task contents, configuration, URLs, stderr or environment values.
         manifest = json.loads((ROOT / 'manifest.json').read_text())
-        report = 'Omamail diagnostics\n'
+        report = 'SupaOmaMail diagnostics\n'
         report += 'plugin: ' + str(manifest['version']) + '\n'
         report += 'pinned backend: ' + (ROOT / 'backend-version').read_text().strip() + '\n'
         report += 'API revision: ' + str(json.loads((ROOT / 'backend-api.json').read_text())['apiVersion']) + '\n'
         report += '\nRecent backend errors (only known error identifiers are retained):\n'
         report += '\n'.join(json.dumps(event, ensure_ascii=True) for event in entries) or '(none recorded)'
         write(fd, 'report.txt', report + '\n')
-    prompt = ('Diagnose an Omamail error using the local report at ' + str(folder / 'report.txt')
+    prompt = ('Diagnose a SupaOmaMail error using the local report at ' + str(folder / 'report.txt')
               + '. Start with read-only investigation. Explain the cause and propose a fix. '
                 'Do not send mail, retry failed operations, change settings, delete or move AI history, '
                 'or read mail bodies, credentials or conversation files without explicit user approval. '

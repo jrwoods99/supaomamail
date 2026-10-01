@@ -22,16 +22,16 @@ cp "$bindings" "$tmp/original"
 
 sh "$script" on "$root" >/dev/null
 grep -qxF 'hl.unbind("SUPER + SHIFT + E")' "$bindings" || fail "on must unbind Omarchy's SUPER+SHIFT+E"
-grep -qF "o.bind(\"SUPER + SHIFT + E\", \"Email\", \"omarchy-shell shell summon omamail '{}'\")" "$bindings" \
-  || fail "on must bind SUPER+SHIFT+E to summon Omamail"
+grep -qF "o.bind(\"SUPER + SHIFT + E\", \"Email\", \"omarchy-shell shell summon supaomamail '{}'\")" "$bindings" \
+  || fail "on must bind SUPER+SHIFT+E to summon SupaOmaMail"
 grep -qF 'compose' "$bindings" || fail "on must bind SUPER+SHIFT+ALT+E to a new message"
-[ -f "$XDG_DATA_HOME/applications/omamail.desktop" ] || fail "on must register omamail.desktop"
+[ -f "$XDG_DATA_HOME/applications/supaomamail.desktop" ] || fail "on must register supaomamail.desktop"
 if command -v xdg-mime >/dev/null 2>&1; then
   [ "$(sh "$script" status)" = default ] || fail "on must report default"
 fi
 
 sh "$script" on "$root" >/dev/null
-[ "$(grep -c 'omamail default mail client, do not edit' "$bindings")" = 1 ] \
+[ "$(grep -c 'supaomamail default mail client, do not edit' "$bindings")" = 1 ] \
   || fail "a second on must not add a second block"
 
 sh "$script" off >/dev/null

@@ -226,7 +226,9 @@ fn call_at(root: &Path, method: &str, params: &Value) -> Result<Value> {
     } else {
         Vec::new()
     };
-    let Some(dir) = crate::cache::directories(root, &["omamail"], writing)? else {
+    let Some(dir) =
+        crate::cache::directories(root, &[crate::platform::dirs::APP_DIRECTORY], writing)?
+    else {
         return Ok(json!({"record":empty(),"revision":revision(&[])}));
     };
     let _lock = if writing {

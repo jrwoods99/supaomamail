@@ -22,7 +22,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA_ROOT = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share") / "omamail"
+DATA_ROOT = Path(os.environ.get("XDG_DATA_HOME") or Path.home() / ".local/share") / "supaomamail"
 BINARY = DATA_ROOT / "bin/omamail"
 LEGACY_BINARY = ROOT / "runtime/bin/omamail"
 LOCAL_BUILD = DATA_ROOT / "local-build.json"
@@ -338,13 +338,13 @@ def legacy_cli_target(target):
         if len(raw) > MANIFEST_LIMIT:
             return False
         value = json.loads(raw)
-        return isinstance(value, dict) and value.get("id") == "omamail"
+        return isinstance(value, dict) and value.get("id") == "supaomamail"
     except (OSError, Refused, UnicodeError, json.JSONDecodeError):
         return False
 
 
 def cli_link(enable):
-    link = Path.home() / ".local/bin/omamail"
+    link = Path.home() / ".local/bin/supaomamail"
     safe_path(link.parent, directory=True, create=enable)
     if link.is_symlink():
         target = os.readlink(link)
@@ -365,7 +365,7 @@ def cli_link(enable):
 
 def cli_installed():
     """Inspect only the owned link; never execute a PATH or foreign target."""
-    link = Path.home() / ".local/bin/omamail"
+    link = Path.home() / ".local/bin/supaomamail"
     try:
         safe_path(link.parent, directory=True)
         return link.is_symlink() and os.readlink(link) == str(BINARY)

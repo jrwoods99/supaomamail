@@ -60,7 +60,7 @@ Item {
       verify(pluginService.credentialGet("imap-password", "imap:one@example.org", "",
         function(value, error) { read = value + "|" + error }))
       var lookup = processNamed(pluginService, "legacy-credential-get")
-      compare(lookup.command, ["secret-tool", "lookup", "service", "omamail", "kind",
+      compare(lookup.command, ["secret-tool", "lookup", "service", "supaomamail", "kind",
         "imap-password", "account", "imap:one@example.org"])
       lookup.stdout.text = "quotes '\" and Unicode 你好\n"
       lookup.exited(0)
@@ -71,7 +71,7 @@ Item {
         function(ok) { stored = ok }))
       var writer = processNamed(pluginService, "legacy-credential-put")
       compare(writer.command, [pluginService.pluginDir + "/scripts/keyring-store.sh",
-        "service", "omamail", "kind", "calendar-password", "source", "source-one"])
+        "service", "supaomamail", "kind", "calendar-password", "source", "source-one"])
       verify(writer.command.indexOf("$(not shell)") < 0)
       writer.started()
       compare(writer.written, "$(not shell)\n")

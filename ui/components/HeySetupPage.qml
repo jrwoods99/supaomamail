@@ -43,7 +43,7 @@ Column {
     width: parent.width
     providerId: "hey"
     title: "Add a HEY mailbox"
-    detail: "HEY does not speak IMAP or POP. Omamail reads it through the HEY CLI, the client 37signals publish for exactly this — install it once, then sign in here."
+    detail: "HEY does not speak IMAP or POP. SupaOmaMail reads it through the HEY CLI, the client 37signals publish for exactly this — install it once, then sign in here."
     textColor: root.textColor
     dimColor: root.dimColor
     panelFontFamily: root.panelFontFamily
@@ -157,7 +157,7 @@ Column {
 
     Text {
       width: parent.width
-      text: "This opens HEY in your browser. The token comes back to the HEY CLI, which keeps it in your keyring and refreshes it — Omamail never holds it and never asks for your HEY password."
+      text: "This opens HEY in your browser. The token comes back to the HEY CLI, which keeps it in your keyring and refreshes it — SupaOmaMail never holds it and never asks for your HEY password."
       color: root.dimColor
       font.family: root.panelFontFamily
       font.pixelSize: Style.font.caption

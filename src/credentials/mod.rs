@@ -158,8 +158,13 @@ impl CredentialKey {
         if self.provider != provider {
             return Err(Error::InvalidKey);
         }
+        // The app's own name, so its sign-ins never collide with an Omamail
+        // installed beside it.
         let mut attrs = BTreeMap::from([
-            ("service".into(), "omamail".into()),
+            (
+                "service".into(),
+                crate::platform::dirs::APP_DIRECTORY.into(),
+            ),
             ("kind".into(), kind.into()),
         ]);
         if provider == "caldav" {

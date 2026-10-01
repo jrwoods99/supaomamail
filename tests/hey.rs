@@ -26,7 +26,7 @@ fn mail_actions_use_bound_official_cli_batches_and_never_retry_refusals() {
     let dir = std::path::PathBuf::from(String::from_utf8(temp.stdout).unwrap().trim())
         .canonicalize()
         .unwrap();
-    let config = config_root(&dir, &dir).join("omamail");
+    let config = config_root(&dir, &dir).join(omamail::platform::dirs::APP_DIRECTORY);
     fs::create_dir_all(&config).unwrap();
     fs::write(config.join("accounts.json"),br#"{"version":1,"activeId":"hey:a@example.org","accounts":[{"provider":"hey","email":"a@example.org"}]}"#).unwrap();
     fs::set_permissions(&config, fs::Permissions::from_mode(0o700)).unwrap();

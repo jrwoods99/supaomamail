@@ -70,7 +70,7 @@ pub(super) fn call_at(root: &Path, method: &str, params: &Value) -> Result<Value
     } else {
         Vec::new()
     };
-    let Some(dir) = directories(root, &["omamail"], writing)? else {
+    let Some(dir) = directories(root, &[crate::platform::dirs::APP_DIRECTORY], writing)? else {
         return Ok(empty());
     };
     let existing = regular(&dir, &name, false)?;

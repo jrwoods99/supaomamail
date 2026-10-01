@@ -65,7 +65,7 @@ fn malformed_edit_history_never_writes_recovery() {
             ),
             Err("recovery_invalid_user_modified")
         );
-        assert!(!temp.0.join("omamail").exists());
+        assert!(!temp.0.join(crate::platform::dirs::APP_DIRECTORY).exists());
     }
 }
 
@@ -118,10 +118,14 @@ fn snapshots_are_private_atomic_and_stale_clear_cannot_erase_newer_draft() {
         second
     );
     assert_eq!(
-        std::fs::metadata(temp.0.join("omamail/compose.json"))
-            .unwrap()
-            .permissions()
-            .mode()
+        std::fs::metadata(
+            temp.0
+                .join(crate::platform::dirs::APP_DIRECTORY)
+                .join("compose.json")
+        )
+        .unwrap()
+        .permissions()
+        .mode()
             & 0o777,
         0o600
     );
@@ -140,11 +144,11 @@ fn links_never_read_write_or_modify_outside_target() {
     for name in ["compose.json", ".compose.lock"] {
         for hard in [false, true] {
             let temp = Temp::new();
-            std::fs::create_dir(temp.0.join("omamail")).unwrap();
+            std::fs::create_dir(temp.0.join(crate::platform::dirs::APP_DIRECTORY)).unwrap();
             let outside = temp.0.join("outside");
             std::fs::write(&outside, b"secret").unwrap();
             std::fs::set_permissions(&outside, std::fs::Permissions::from_mode(0o644)).unwrap();
-            let path = temp.0.join("omamail").join(name);
+            let path = temp.0.join(crate::platform::dirs::APP_DIRECTORY).join(name);
             if hard {
                 std::fs::hard_link(&outside, path).unwrap();
             } else {
@@ -195,7 +199,7 @@ fn attachment_metadata_never_opens_paths_and_invalid_paths_write_nothing() {
             Err("recovery_attachment_path_invalid")
         );
     }
-    assert!(!temp.0.join("omamail").exists());
+    assert!(!temp.0.join(crate::platform::dirs::APP_DIRECTORY).exists());
 }
 #[test]
 fn js_oracle_parity_for_normalized_drafts() {

@@ -1,93 +1,63 @@
-# Omamail
+# SupaOmaMail
 
-Omamail is a native email and calendar app with multiple accounts and keyboard navigation. It runs either as an Omarchy shell plugin or as a standalone Qt desktop application.
+SupaOmaMail is a fork of [Omamail](https://github.com/huacnlee/omamail) by huacnlee: a native email and calendar app with multiple accounts and keyboard navigation, running as an Omarchy shell plugin. It adds Gmail triage features on top, and it installs beside Omamail with its own settings, sign-ins and data, so the two never touch each other.
 
-<img width="800" alt="Omamail — reading mail with AI assistance" src="docs/images/full-mail.webp" />
+<img width="800" alt="Reading mail with AI assistance" src="docs/images/full-mail.webp" />
 
-## Install
+## What SupaOmaMail adds
 
-### Omarchy plugin
+- **Primary and Other tabs for the Gmail Inbox.** Turn them on per mailbox in Settings → Mailboxes → "Split the Inbox into Primary and Other". Promotions, Social and Forums go to Other; everything else, Updates included, stays in Primary. `Tab` and `Shift+Tab` switch tabs.
+- **Gmail's importance marker.** Important messages show the marker in the list; `+` (or `=`) marks a message important and `-` marks it not important, which is what Gmail learns from.
+- **Snooze on `h`** (or Gmail's own `b`). Type when the message should come back: `2m` offers two minutes, then two months, then two Mondays; `tom 3` offers tomorrow at 15:00, then 03:00; `fri 9am`, `oct 5`, `next week` and the like work too, and the arrows walk the answers. Day-only answers wake at 08:00. The message leaves the Inbox at once, comes back unread at its time with a "Back from snooze" notification, and a Snoozed mailbox lists what is waiting. `Alt+Z` or the toast's Undo takes a snooze back.
 
-The plugin requires **Omarchy 4** and follows the active Omarchy theme. It includes the bar widget, `mailto:` integration, and AI assistance through the configured Omarchy agent.
+Snoozing needs the backend built from this repository (see below). A snoozed message is filed under the Gmail label `SupaOmaMail/Snoozed` while it is away, so Gmail on the web and your phone show it there too; it comes back only while SupaOmaMail's backend is running, which on Omarchy is whenever the shell is.
 
-```bash
-omarchy plugin add https://github.com/huacnlee/omamail.git --enable
-```
+Everything else is Omamail's: Gmail, Outlook, HEY, JMAP and IMAP/SMTP mailboxes; mail and calendar; keyboard navigation (`?` shows every key, or see the [keyboard guide](docs/KEYS.md)); AI assistance through your Omarchy agent; native notifications; credentials in the system keyring; and remote images blocked until you load them.
 
-Update it with:
+## Install on Omarchy
 
-```bash
-omarchy plugin update omamail
-```
-
-Click the envelope in the bar, install the pinned backend when prompted, and add your mailbox. Prebuilt plugin backends are available for Linux x86_64 and aarch64.
-
-### Standalone desktop app
-
-The standalone app includes mail, calendar, and native desktop notifications. It has no system tray, AI assistance, or operating-system `mailto:` registration in this release.
-
-macOS & Linux:
+SupaOmaMail is installed from source, because its backend has features no Omamail release carries. It needs **Omarchy 4** and the build tools:
 
 ```bash
-curl -fsSL https://huacnlee.github.io/omamail/install.sh | sh
+sudo pacman -S --needed rustup cmake qt6-declarative nodejs python
+rustup default stable
 ```
 
-Windows (PowerShell):
-
-```powershell
-irm https://huacnlee.github.io/omamail/install.ps1 | iex
-```
-
-Each installer verifies the release package before replacing an existing version. The macOS app and Windows executable are unsigned. The macOS installer removes quarantine only after verifying the downloaded archive. See [standalone runtime and release details](docs/BACKEND-RUNTIME.md#standalone-bundled-backend) for package layout, platform integration, installer behavior, and security checks.
-
-## Run from source
-
-Install Rust, CMake 3.21 or newer, and Qt 6.5 or newer, then use the repository Make targets:
+Clone it, run the tests, then install:
 
 ```bash
-make app-run
+git clone https://github.com/jrwoods99/supaomamail.git ~/supaomamail
+cd ~/supaomamail
+make test
+make install
 ```
 
-`make app-run` builds the standalone backend without the AI feature, builds the Qt host, and launches it from the source resources. See [Contributing](CONTRIBUTING.md) for validation commands.
+`make install` builds the backend into `~/.local/share/supaomamail/`, links the plugin into `~/.config/omarchy/plugins/supaomamail`, and restarts the Omarchy shell. A second envelope appears in the bar; an Omamail you already have stays exactly as it is. To update later, `git pull` in the checkout and run `make install` again.
 
-## Features
+Then add your mailbox in SupaOmaMail. It keeps its own accounts, so you sign in once here even if Omamail already has the mailbox. Gmail needs a Google OAuth client: reuse Omamail's by copying `~/.config/omamail/credentials.json` to `~/.config/supaomamail/credentials.json`, or set one up as described in [mailbox setup](docs/MAILBOXES.md).
 
-- **Multiple mailboxes:** Gmail, Outlook, HEY, JMAP and IMAP/SMTP, including Fastmail, iCloud and self-hosted servers.
-- **Mail and calendar:** read, search, compose, manage attachments and respond to meeting invitations. Available actions depend on your provider.
-- **Keyboard navigation:** `j`/`k` to move, `r` to reply, `c` to compose, `/` to search and `?` for all shortcuts.
-- **AI assistance in Omarchy:** ask about selected messages and review suggested drafts using your Omarchy AI setup. See [AI assistance](docs/AGENT.md).
-- **Desktop integration:** native notifications and a compact layout for smaller windows; the Omarchy plugin also provides the bar widget and `mailto:` integration.
-- **Privacy controls:** credentials stored in the system keyring and remote images blocked until you choose to load them.
+To remove SupaOmaMail, delete the plugin link and restart the shell; its data is in `~/.config/supaomamail`, `~/.cache/supaomamail`, `~/.local/state/supaomamail` and `~/.local/share/supaomamail`.
 
-<img width="265" alt="Omamail calendar" src="docs/images/full-calendar.webp" /> <img width="265" alt="Writing a message" src="docs/images/full-compose.webp" /> <img width="265" alt="Compact message list" src="docs/images/mini-list.webp" />
+```bash
+rm ~/.config/omarchy/plugins/supaomamail
+omarchy restart shell
+```
 
-## Add your mailbox
+## Make SupaOmaMail the default mail client
 
-Choose a provider in Settings. Gmail needs a Google OAuth client; Outlook needs a Microsoft app registration. HEY uses the official [HEY CLI](https://github.com/basecamp/hey-cli). JMAP and IMAP usually use an app password or API token.
+Installing SupaOmaMail never takes `mailto:` links or `SUPER+SHIFT+E` from anything else. Choose **Settings → Default mail client → Set as default** to make it open `mailto:` links, `SUPER+SHIFT+E`, and `SUPER+SHIFT+ALT+E` for a new message. The key bindings go in a clearly marked block in `~/.config/hypr/bindings.lua`; **Undo** removes the block. If Omamail was made the default too, whichever was set last is the one the keys open.
 
-See [mailbox setup](docs/MAILBOXES.md) for provider instructions and limitations, including Microsoft 365 and Proton Mail Bridge.
-
-## Make Omamail the default mail client
-
-Omarchy opens HEY's web app on `SUPER+SHIFT+E`. Choose **Settings → Default mail client → Set as default** to make Omamail open `mailto:` links, `SUPER+SHIFT+E`, and `SUPER+SHIFT+ALT+E` for a new message.
-
-The key bindings go in a clearly marked block in `~/.config/hypr/bindings.lua`; Omarchy's own files are never changed. **Undo** removes the block and leaves the file as it was.
-
-## Open the Omarchy plugin from the keyboard
-
-To use another key, add this to `~/.config/hypr/bindings.lua`:
+To open SupaOmaMail with another key, add this to `~/.config/hypr/bindings.lua`:
 
 ```lua
-o.bind("SUPER + SHIFT + G", "Omamail", "omarchy shell shell toggle omamail '{}'")
+o.bind("SUPER + SHIFT + G", "SupaOmaMail", "omarchy shell shell toggle supaomamail '{}'")
 ```
-
-Press `?` in Omamail for the shortcut sheet, or see the [keyboard guide](docs/KEYS.md).
 
 ## Help and contributing
 
-- [Backend installation, updates, release flow, and recovery](docs/BACKEND-RUNTIME.md)
-- [Contributing](CONTRIBUTING.md)
+- [Backend installation, updates and recovery](docs/BACKEND-RUNTIME.md); the documents under `docs/` are Omamail's and still use its name.
+- The features above are kept on their own branches in Omamail's naming, so each can be offered back to Omamail.
 
-Omamail is an independent project and is not affiliated with Google, Microsoft or 37signals. Gmail, Outlook and HEY belong to their respective trademark owners.
+SupaOmaMail and Omamail are independent projects, not affiliated with Google, Microsoft or 37signals. Gmail, Outlook and HEY belong to their respective trademark owners.
 
-Licensed under the [MIT License](LICENSE).
+Licensed under the [MIT License](LICENSE), as Omamail is; Omamail's copyright notice is kept in it.

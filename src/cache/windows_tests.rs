@@ -39,10 +39,16 @@ fn windows_cache_put_read_touch_clear_complete_their_filesystem_operations() {
         call_at(&root, "cache.resourceRead", &resource).unwrap(),
         resource["resource"]
     );
-    let readonly_dir =
-        directories_readonly(&root, &["omamail", "bodies", "account-one_40example.org"])
-            .unwrap()
-            .unwrap();
+    let readonly_dir = directories_readonly(
+        &root,
+        &[
+            crate::platform::dirs::APP_DIRECTORY,
+            "bodies",
+            "account-one_40example.org",
+        ],
+    )
+    .unwrap()
+    .unwrap();
     let readonly_file = regular_readonly(&readonly_dir, "mail-one.json")
         .unwrap()
         .unwrap();
@@ -70,9 +76,16 @@ fn windows_cache_put_read_touch_clear_complete_their_filesystem_operations() {
             .is_null()
     );
     for kind in ["bodies", "resources"] {
-        let dir = directories_readonly(&root, &["omamail", kind, "account-one_40example.org"])
-            .unwrap()
-            .unwrap();
+        let dir = directories_readonly(
+            &root,
+            &[
+                crate::platform::dirs::APP_DIRECTORY,
+                kind,
+                "account-one_40example.org",
+            ],
+        )
+        .unwrap()
+        .unwrap();
         assert!(names(&dir).unwrap().is_empty());
     }
 }

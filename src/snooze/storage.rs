@@ -53,7 +53,7 @@ fn directory(root: &Option<PathBuf>) -> Result<std::fs::File> {
         Some(root) => root.clone(),
         None => crate::platform::dirs::AppDirs::discover()?.state,
     };
-    crate::cache::directories(&root, &["omamail"], true)
+    crate::cache::directories(&root, &[crate::platform::dirs::APP_DIRECTORY], true)
         .map_err(|error| match error {
             "cache_unsafe_path" => "snooze_storage_unsafe",
             _ => "snooze_storage_unavailable",

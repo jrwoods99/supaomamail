@@ -29,7 +29,7 @@ pub(crate) struct LocalEndpoint {
 }
 impl LocalEndpoint {
     pub(crate) fn outbox(root: &Path) -> Result<Self> {
-        let dir = private_fs::directories_readonly(root, &["omamail"])?
+        let dir = private_fs::directories_readonly(root, &[crate::platform::dirs::APP_DIRECTORY])?
             .ok_or("outbox_owner_unavailable")?;
         private_fs::validate_owned_root(&dir)?;
         let (volume, id, _) = private_fs::file_id(&dir)?;

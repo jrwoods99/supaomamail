@@ -1,5 +1,5 @@
 #!/bin/sh
-# Makes Omamail the desktop's mail client, or hands the job back.
+# Makes SupaOmaMail the desktop's mail client, or hands the job back.
 #
 #   default-mail.sh on <plugin-dir>   claim mailto: and SUPER+SHIFT+E
 #   default-mail.sh off               restore Omarchy's own email bindings
@@ -14,13 +14,15 @@
 #
 # Omarchy's own files are never touched. `off` removes the block and leaves the
 # file byte-identical to what it was before `on`; the mailto default stays with
-# Omamail because Omarchy ships no handler to give it back to.
+# SupaOmaMail because Omarchy ships no handler to give it back to. Omamail's own
+# block, if any, is left alone: this one is appended after it, so whichever
+# client was made the default last is the one SUPER+SHIFT+E opens.
 set -eu
 
 CONFIG_HOME=${XDG_CONFIG_HOME:-${HOME:?}/.config}
 BINDINGS_FILE="$CONFIG_HOME/hypr/bindings.lua"
-BLOCK_BEGIN="-- >>> omamail default mail client, do not edit by hand"
-BLOCK_END="-- <<< omamail default mail client"
+BLOCK_BEGIN="-- >>> supaomamail default mail client, do not edit by hand"
+BLOCK_END="-- <<< supaomamail default mail client"
 
 fail() {
   printf '%s\n' "$1" >&2
@@ -36,8 +38,8 @@ bindings_block() {
 $BLOCK_BEGIN
 hl.unbind("SUPER + SHIFT + E")
 hl.unbind("SUPER + SHIFT + ALT + E")
-o.bind("SUPER + SHIFT + E", "Email", "omarchy-shell shell summon omamail '{}'")
-o.bind("SUPER + SHIFT + ALT + E", "New email", "omarchy-shell shell summon omamail '{\"compose\":true}'")
+o.bind("SUPER + SHIFT + E", "Email", "omarchy-shell shell summon supaomamail '{}'")
+o.bind("SUPER + SHIFT + ALT + E", "New email", "omarchy-shell shell summon supaomamail '{\"compose\":true}'")
 $BLOCK_END
 EOF
 }
@@ -85,8 +87,8 @@ case "${1:-}" in
     sh "$plugin_dir/scripts/register-mailto.sh" "$plugin_dir" --claim-default
     add_block
     reload_hyprland
-    printf '%s\n' 'Omamail is now the default mail client.'
-    printf '%s\n' 'SUPER+SHIFT+E opens Omamail; SUPER+SHIFT+ALT+E starts a new message.'
+    printf '%s\n' 'SupaOmaMail is now the default mail client.'
+    printf '%s\n' 'SUPER+SHIFT+E opens SupaOmaMail; SUPER+SHIFT+ALT+E starts a new message.'
     ;;
   off)
     [ "$#" -eq 1 ] || usage
@@ -96,7 +98,7 @@ case "${1:-}" in
     ;;
   status)
     [ "$#" -eq 1 ] || usage
-    if has_block && [ "$(mailto_default)" = omamail.desktop ]; then
+    if has_block && [ "$(mailto_default)" = supaomamail.desktop ]; then
       printf '%s\n' default
     else
       printf '%s\n' not-default

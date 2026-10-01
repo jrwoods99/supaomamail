@@ -3,7 +3,7 @@
 //!
 //! Gmail's API has no snooze, so the backend keeps the promise itself.
 //! Snoozing takes INBOX off the message and files it under a label of our own,
-//! `Omamail/Snoozed`, which is what the Snoozed mailbox lists and what Gmail's
+//! `SupaOmaMail/Snoozed`, which is what the Snoozed mailbox lists and what Gmail's
 //! own web app shows; when it comes back is kept here, in a private file in the
 //! state directory. At that time the worker puts INBOX back and marks the
 //! message unread, then says so with `snooze.changed`.
@@ -40,7 +40,7 @@ mod tests;
 type Result<T> = std::result::Result<T, &'static str>;
 
 /// The label a snoozed Gmail message is filed under while it is away.
-pub const LABEL: &str = "Omamail/Snoozed";
+pub const LABEL: &str = "SupaOmaMail/Snoozed";
 
 const MAX_ENTRIES: usize = 5000;
 const MAX_IDS: usize = 1000;

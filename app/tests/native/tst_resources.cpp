@@ -41,7 +41,7 @@ private:
         writeFile(paths.standaloneQml, "import QtQuick\nItem {}\n");
         writeFile(paths.sharedUi, "import QtQuick\nItem {}\n");
         writeFile(paths.platformPlugin);
-        writeFile(paths.manifest, QByteArrayLiteral("{\"id\":\"omamail\",\"name\":\"Omamail\",\"version\":\"")
+        writeFile(paths.manifest, QByteArrayLiteral("{\"id\":\"supaomamail\",\"name\":\"SupaOmaMail\",\"version\":\"")
             + QByteArrayLiteral(OMAMAIL_APP_VERSION) + QByteArrayLiteral("\"}"));
         writeFile(paths.backend, "#!/bin/sh\nexit 0\n");
         QFile backend(paths.backend);

@@ -43,7 +43,7 @@ Item {
     && (service.backendRuntime.state !== "ready" || !service.backend.ready)
 
   readonly property string pluginId: manifest && manifest.id
-    ? String(manifest.id) : "omamail"
+    ? String(manifest.id) : "supaomamail"
   property var composeRecovery: Recovery.empty()
   property bool composeRecoveryLoaded: false
   property bool composeRecoveryRestoring: false
@@ -1302,7 +1302,7 @@ Item {
 
   FloatingWindow {
     id: window
-    title: "Omamail"
+    title: "SupaOmaMail"
     color: root.background
     implicitWidth: Style.space(980)
     implicitHeight: Style.space(720)
@@ -1456,7 +1456,7 @@ Item {
           Text {
             anchors.verticalCenter: parent.verticalCenter
             visible: !root.compact
-            text: "Omamail"
+            text: "SupaOmaMail"
             color: root.foreground
             font.family: root.fontFamily
             font.pixelSize: Style.font.title
